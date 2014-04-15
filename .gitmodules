@@ -1,0 +1,6 @@
+[submodule "externals/Terradue.GeoJson"]
+	path = externals/Terradue.GeoJson
+	url = git://github.com/Terradue/Terradue.GeoJson
+[submodule "externals/Terradue.OpenSearch"]
+	path = externals/Terradue.OpenSearch
+	url = git://github.com/Terradue/Terradue.OpenSearch
