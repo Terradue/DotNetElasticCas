@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{3ED47B7C-208B-4C14-A3FD-3CB92FF84A93}</ProjectGuid>
+    <ProjectTypeGuids>{349C5851-65DF-11DA-9384-00065B846F21};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Terradue.ElasticCas</RootNamespace>
+    <AssemblyName>ElasticCas</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.4.0.8\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="PlainElastic.Net">
+      <HintPath>..\packages\PlainElastic.Net.1.0.44\lib\Net40\PlainElastic.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\packages\ServiceStack.Common.3.9.71\lib\net35\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Text">
+      <HintPath>..\packages\ServiceStack.Text.3.9.71\lib\net35\ServiceStack.Text.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Common">
+      <HintPath>..\packages\ServiceStack.Common.3.9.71\lib\net35\ServiceStack.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack">
+      <HintPath>..\packages\ServiceStack.3.9.71\lib\net35\ServiceStack.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Configuration" />
+    <Reference Include="ServiceStack.ServiceInterface">
+      <HintPath>..\packages\ServiceStack.3.9.71\lib\net35\ServiceStack.ServiceInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="log4net">
+      <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Addins, Version=0.6.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
+    <Reference Include="Terradue.ElasticCas">
+      <HintPath>..\externals\ElasticCas.EO\Terradue.ElasticCas.EarthObservation\bin\Terradue.ElasticCas.EarthObservation.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Global.asax" />
+    <Content Include="web.config" />
+    <Content Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Terradue\ElasticCas\Services\BaseService.cs" />
+    <Compile Include="Terradue\ElasticCas\Controller\ElasticCasFactory.cs" />
+    <Compile Include="Terradue\ElasticCas\Model\Index.cs" />
+    <Compile Include="Terradue\ElasticCas\Services\IndicesService.cs" />
+    <Compile Include="Terradue\ElasticCas\Services\ServiceStackJsonSerializer.cs" />
+    <Compile Include="Terradue\ElasticCas\Controller\JsonNetSerializer.cs" />
+    <Compile Include="NotFoundException.cs" />
+    <Compile Include="Terradue\ElasticCas\Services\OpenSearchDescriptionService.cs" />
+    <Compile Include="AppHost.cs" />
+    <Compile Include="Terradue\ElasticCas\Model\Metadata.cs" />
+    <Compile Include="Terradue\ElasticCas\Request\OpenSearchQueryRequest.cs" />
+    <Compile Include="Terradue\ElasticCas\Request\Indices.cs" />
+    <Compile Include="Terradue\ElasticCas\Request\OpenSearchDescription.cs" />
+    <Compile Include="Terradue\ElasticCas\Model\Mapping.cs" />
+    <Compile Include="Terradue\ElasticCas\Request\MetadataRequest.cs" />
+    <Compile Include="Terradue\ElasticCas\Request\Types.cs" />
+    <Compile Include="Terradue\ElasticCas\Services\TypesService.cs" />
+    <Compile Include="Terradue\ElasticCas\Model\IElasticDocument.cs" />
+    <Compile Include="Terradue\ElasticCas\Exceptions\InvalidTypeModelException.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties VerifyCodeBehindFields="True" VerifyCodeBehindEvents="True">
+        <XspParameters Port="8081" Address="127.0.0.1" SslMode="None" SslProtocol="Default" KeyType="None" CertFile="" KeyFile="" PasswordOptions="None" Password="" Verbose="True" />
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
+  <ItemGroup>
+    <Folder Include="Terradue\" />
+    <Folder Include="Terradue\ElasticCas\" />
+    <Folder Include="Terradue\ElasticCas\Services\" />
+    <Folder Include="Terradue\ElasticCas\Model\" />
+    <Folder Include="Terradue\ElasticCas\Controller\" />
+    <Folder Include="Terradue\ElasticCas\Request\" />
+    <Folder Include="Terradue\ElasticCas\Exceptions\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\externals\DotNetGeoJson\Terradue.GeoJson\Terradue.GeoJson.csproj">
+      <Project>{26AD29FF-862F-46D9-9F25-473E2977A7C3}</Project>
+      <Name>Terradue.GeoJson</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\externals\DotNetOpenSearch\Terradue.OpenSearch\Terradue.OpenSearch.csproj">
+      <Project>{997A44FD-EE4A-490A-855B-88305E0CD269}</Project>
+      <Name>Terradue.OpenSearch</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\externals\DotNetOpenSearchGeoJson\Terradue.OpenSearch.GeoJson\Terradue.OpenSearch.GeoJson.csproj">
+      <Project>{B932B7CD-4DDA-4084-AFBC-0FFCF4310C2E}</Project>
+      <Name>Terradue.OpenSearch.GeoJson</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\externals\DotNetOpenSearch\externals\DotNetSyndication\Terradue.ServiceModel.Syndication\Terradue.ServiceModel.Syndication.csproj">
+      <Project>{729A82DF-D3CE-4A1A-BA83-0508F0362DB5}</Project>
+      <Name>Terradue.ServiceModel.Syndication</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>
