@@ -6,35 +6,21 @@ using PlainElastic.Net;
 using log4net;
 using PlainElastic.Net.Serialization;
 
-namespace Terradue.ElasticCas {
-	public class BaseService : Service {
-		protected System.Configuration.Configuration rootWebConfig;
-		protected System.Configuration.KeyValueConfigurationElement esHost;
-		protected System.Configuration.KeyValueConfigurationElement esPort;
+namespace Terradue.ElasticCas.Service {
+    public class BaseService : ServiceStack.ServiceInterface.Service {
+		
 		protected ElasticConnection esConnection;
-		protected readonly ILog logger;
+
+        protected ElasticCasFactory ecf;
+		
 
 		protected IJsonSerializer serializer;
 
-		public BaseService() {
+        public BaseService(string name) {
 
-			// Init Log
-			logger = LogManager.GetLogger(this.GetType().Name);
+            ecf = new ElasticCasFactory(name);
 
-			// Get web config
-			rootWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration(null);
-			if (rootWebConfig.AppSettings.Settings.Count > 0) {
-				esHost = rootWebConfig.AppSettings.Settings["esHost"];
-				esPort = rootWebConfig.AppSettings.Settings["esPort"];
-				if (esHost != null)
-					logger.InfoFormat("Using ElasticSearch Host : {0}", esHost);
-				else {
-					esHost.Value = "localhost";
-					logger.InfoFormat("No ElasticSearch Host specified, using default : {0}", esHost);
-				}
-			}
-
-			esConnection = new ElasticConnection(esHost.Value, int.Parse(esPort.Value));
+            esConnection = ecf.EsConnection;
 
             serializer = new ServiceStackJsonSerializer();
 

@@ -11,7 +11,7 @@ using Terradue.ServiceModel.Syndication;
 using Terradue.ElasticCas.Model;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Support;
-using Terradue.ElasticCas.Services;
+using Terradue.ElasticCas.Service;
 
 namespace Terradue.ElasticCas.Request {
 
@@ -72,6 +72,8 @@ namespace Terradue.ElasticCas.Request {
         public string TypeName { get; set; }
 
         public string url { get; set; }
+
+        public Dictionary<string, object> parameters { get; set; } 
     }
 }
 

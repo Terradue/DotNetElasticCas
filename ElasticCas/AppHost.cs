@@ -20,6 +20,7 @@ using Terradue.OpenSearch.Engine;
 using Mono.Addins;
 using Terradue.OpenSearch.Result;
 using Terradue.ElasticCas.Model;
+using Terradue.ElasticCas.Service;
 
 namespace Terradue.ElasticCas {
     public class AppHost : AppHostBase {
@@ -44,12 +45,12 @@ namespace Terradue.ElasticCas {
             WebConfig =
 				System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration(null);
 
-            //JsConfig.ExcludeTypeInfo = false;
+            JsConfig.ExcludeTypeInfo = false;
             JsConfig.ConvertObjectTypesIntoStringDictionary = true;
             JsConfig.ThrowOnDeserializationError = true;
             JsConfig.IncludePublicFields = true;
             JsConfig.EmitCamelCaseNames = true;
-            //JsConfig.IncludeTypeInfo = true;
+            JsConfig.IncludeTypeInfo = true;
 
             //Permit modern browsers (e.g. Firefox) to allow sending of any REST HTTP Method
             base.SetConfig(new EndpointHostConfig {
@@ -62,7 +63,7 @@ namespace Terradue.ElasticCas {
                 },
                 EnableAccessRestrictions = true,
                 DebugMode = true, //Enable StackTraces in development
-                WebHostUrl = WebConfig.AppSettings.Settings["BaseUrl"].Value,
+                WebHostUrl = WebConfig.AppSettings.Settings["baseUrl"].Value,
                 WriteErrorsToResponse = false, //custom exception handling
                 DefaultContentType = ServiceStack.Common.Web.ContentType.Json,
                 ReturnsInnerException = true,

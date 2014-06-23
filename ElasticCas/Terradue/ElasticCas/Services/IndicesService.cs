@@ -8,12 +8,13 @@ using PlainElastic.Net.Serialization;
 using ServiceStack.Common.Web;
 using Terradue.ElasticCas.Request;
 
-namespace Terradue.ElasticCas {
+namespace Terradue.ElasticCas.Service {
 	[Api("Index Service")]
 	[Restrict(EndpointAttributes.InSecure | EndpointAttributes.InternalNetworkAccess | EndpointAttributes.Json,
 	          EndpointAttributes.Secure | EndpointAttributes.External | EndpointAttributes.Json)]
 	public class IndexService : BaseService {
-		public IndexService() : base() {
+
+        public IndexService() : base("Index Service") {
 
 		}
 
@@ -33,8 +34,7 @@ namespace Terradue.ElasticCas {
 
 		[AddHeader(ContentType=ContentType.Json)]
 		public object Put(CreateIndexRequest request) {
-			ElasticCasFactory casFactory = new ElasticCasFactory(esConnection);
-            return casFactory.CreateCatalogueIndex(request.IndexName, request.TypeNames);
+            return ecf.CreateCatalogueIndex(request.IndexName, request.TypeNames);
 		}
 	}
 }

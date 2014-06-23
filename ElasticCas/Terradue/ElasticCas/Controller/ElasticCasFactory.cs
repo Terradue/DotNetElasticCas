@@ -13,16 +13,45 @@ using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Utils;
 using ServiceStack.WebHost.Endpoints;
 using Terradue.ElasticCas.Request;
+using PlainElastic.Net.IndexSettings;
+using log4net;
 
 namespace Terradue.ElasticCas {
 
     public class ElasticCasFactory {
-		ElasticConnection esConnection;
+        ElasticConnection esConnection;
+        internal System.Configuration.Configuration RootWebConfig { get; set; }
+        internal System.Configuration.KeyValueConfigurationElement EsHost { get; set; }
+        internal System.Configuration.KeyValueConfigurationElement EsPort { get; set; }
+        protected readonly ILog logger;
 
-		internal ElasticCasFactory(ElasticConnection connection) {
+        internal ElasticCasFactory(string name) {
 
-			esConnection = connection;
+            // Init Log
+            logger = LogManager.GetLogger(name);
+
+            // Get web config
+            RootWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration(null);
+            if (RootWebConfig.AppSettings.Settings.Count > 0) {
+                EsHost = RootWebConfig.AppSettings.Settings["esHost"];
+                EsPort = RootWebConfig.AppSettings.Settings["esPort"];
+                if (EsHost != null)
+                    logger.InfoFormat("Using ElasticSearch Host : {0}", EsHost);
+                else {
+                    EsPort.Value = "localhost";
+                    logger.InfoFormat("No ElasticSearch Host specified, using default : {0}", EsHost);
+                }
+            }
+
+            esConnection = new ElasticConnection(EsHost.Value, int.Parse(EsPort.Value));
+            logger.InfoFormat("New ElasticSearch Connection from {0}", name);
 		}
+
+        public ElasticConnection EsConnection {
+            get {
+                return esConnection;
+            }
+        }
 
         internal OperationResult CreateCatalogueIndex(string indexName, string[] typeNames, bool destroy = false) {
 
@@ -37,9 +66,12 @@ namespace Terradue.ElasticCas {
 			}
 
 			string command = Commands.CreateIndex(indexName);
-			string jsondata;
 
-			esConnection.Put(command);
+            string jsondata = new IndexSettingsBuilder().Analysis(a => a.Analyzer(an => an.Custom("default", custom => custom
+                                                                                                  .Tokenizer(DefaultTokenizers.standard)
+                                                                                                  .Filter(DefaultTokenFilters.standard)))).Build();
+
+            esConnection.Put(command, jsondata);
 
             // Init mapp    ings for each types declared
 
@@ -89,9 +121,10 @@ namespace Terradue.ElasticCas {
 
         }
 
-        public static IElasticDocumentCollection GetDtoByTypeName(string typeName) {
+        public static IElasticDocumentCollection GetDtoByTypeName(string typeName, Dictionary<string, object> parameters = null) {
             foreach (TypeExtensionNode node in AddinManager.GetExtensionNodes (typeof(IElasticDocumentCollection))) {
                 IElasticDocumentCollection docs = (IElasticDocumentCollection)node.CreateInstance();
+                docs.Parameters = parameters;
                 if (docs.TypeName == typeName) {
                     return docs;
                 }

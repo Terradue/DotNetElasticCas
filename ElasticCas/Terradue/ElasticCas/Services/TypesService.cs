@@ -21,12 +21,12 @@ using Terradue.ElasticCas.Model;
 using Terradue.OpenSearch.GeoJson.Extensions;
 using System.Collections.ObjectModel;
 
-namespace Terradue.ElasticCas.Services {
-    [Api("DataSet Ingestion Service")]
+namespace Terradue.ElasticCas.Service {
+    [Api("Type Ingestion Service")]
     [Restrict(EndpointAttributes.InSecure | EndpointAttributes.InternalNetworkAccess | EndpointAttributes.Json,
            EndpointAttributes.Secure | EndpointAttributes.External | EndpointAttributes.Json)]
     public class TypesIngestionService : BaseService {
-        public TypesIngestionService() : base() {
+        public TypesIngestionService() : base("Type Ingestion Service") {
 
         }
 
@@ -82,25 +82,25 @@ namespace Terradue.ElasticCas.Services {
             IElasticDocumentCollection collection = ElasticCasFactory.GetDtoByTypeName(request.TypeName);
 
             if ( collection == null )
-                throw new NotFoundException(string.Format("Type '{0}' is not found in the type extensions. Check that plugins are loaded", request.TypeName));
+                throw new InvalidTypeModelException(request.TypeName, string.Format("Type '{0}' is not found in the type extensions. Check that plugins are loaded", request.TypeName));
 
-            IOpenSearchResult osres = ose.Query(entity,new NameValueCollection(),collection.GetOpenSearchResultType());
+            IOpenSearchResult osres = ose.Query(entity,new NameValueCollection());
+            OpenSearchFactory.RemoveLinksByRel(osres, "alternate");
+            OpenSearchFactory.RemoveLinksByRel(osres, "via");
+            OpenSearchFactory.RemoveLinksByRel(osres, "self");
+            OpenSearchFactory.RemoveLinksByRel(osres, "search");
 
             Collection<IElasticDocument> documents = collection.CreateFromOpenSearchResult(osres.Result);
 
-            OpenSearchFactory.RemoveLinksByRel(osres, "self");
-            OpenSearchFactory.RemoveLinksByRel(osres, "alternate");
-            OpenSearchFactory.RemoveLinksByRel(osres, "via");
-
             string command = new BulkCommand(index: request.IndexName, type: request.TypeName);
 
-			string bulkJson = 
-				new BulkBuilder(serializer)
+            string bulkJson = 
+                new BulkBuilder(serializer)
                     .BuildCollection(documents,
                                      (builder, item) => builder.Index(data: item, id: item.Id.Replace('.', '_'))
 					                 // You can apply any custom logic here
 					                 // to generate Indexes, Creates or Deletes.
-				);
+                                    );
 
 			string response;
 
@@ -109,28 +109,28 @@ namespace Terradue.ElasticCas.Services {
 			} catch (Exception e) {
 				throw e;
 			}
-			return response;
+            return response;
 
 		}
 	}
 
-	[Api("DataSet Retrieval Service")]
+    [Api("Type Retrieval Service")]
 	[Restrict(EndpointAttributes.InSecure | EndpointAttributes.InternalNetworkAccess | EndpointAttributes.Json,
 	          EndpointAttributes.Secure | EndpointAttributes.External | EndpointAttributes.Json)]
-	public class DataSetRetrievalService : BaseService {
-		public DataSetRetrievalService() : base() {
+	public class TypeRetrievalService : BaseService {
+        public TypeRetrievalService() : base("Type Retrieval Service") {
 
 		}
 
-        /*[AddHeader(ContentType = ContentType.Json)]
-		public object Get(DatasetGetRequest request) {
+        [AddHeader(ContentType = ContentType.Json)]
+        public object Get(TypeGetRequest request) {
 
 			string response;
 			string result;
 
 			response = esConnection.Get(UrlBuilder.BuildUrlPath(new string[] {
 				request.IndexName,
-				"dataset",
+                request.TypeName,
 				request.Id
 			}));
 			var resultObject = JsonObject.Parse(response);
@@ -138,7 +138,7 @@ namespace Terradue.ElasticCas.Services {
 
 
 			return result;
-		}*/
+		}
     }
 }
 

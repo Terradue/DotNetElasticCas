@@ -15,29 +15,71 @@ using PlainElastic.Net;
 using PlainElastic.Net.Serialization;
 using Terradue.ElasticCas.Request;
 using Terradue.OpenSearch.Schema;
+using Terradue.ElasticCas.Model;
+using Terradue.OpenSearch.Engine;
+using System.Collections.Specialized;
 
-namespace Terradue.ElasticCas {
+namespace Terradue.ElasticCas.Service {
 
 	[Api("OpenSearch Description Service")]
 	[Restrict(EndpointAttributes.InSecure | EndpointAttributes.InternalNetworkAccess | EndpointAttributes.Xml,
 	          EndpointAttributes.Secure | EndpointAttributes.External | EndpointAttributes.Xml)]
     public class OpenSearchDescriptionService : BaseService {
 
+        public OpenSearchDescriptionService () : base ("OpenSearch Description Service"){}
+
 		[AddHeader(ContentType = ContentType.Xml)]
 		public object Get(OpenSearchDescriptionGetRequest request)
 		{
-			OpenSearchDescription osd = new OpenSearchDescription();
+            IElasticDocumentCollection collection = ElasticCasFactory.GetDtoByTypeName(request.TypeName);
+            if (collection == null) {
+                throw new InvalidTypeModelException(request.TypeName, string.Format("Type '{0}' is not found in the type extensions. Check that plugins are loaded", request.TypeName));
+            }
 
-			osd.ShortName = "Datasets Elastic Catalogue";
-			osd.Attribution = "Terradue";
-			osd.Contact = "info@terradue.com";
-			osd.Developer = "Terradue GeoSpatial Development Team";
-			osd.SyndicationRight = "open";
-			osd.AdultContent = "false";
-			osd.Language = "en-us";
-			osd.OutputEncoding = "UTF-8";
-			osd.InputEncoding = "UTF-8";
-			osd.Description = "This Search Service performs queries in the available dataset catalogue. There are several URL templates that return the results in different formats (GeoJson, RDF, ATOM or KML). This search service is in accordance with the OGC 10-032r3 specification.";
+            OpenSearchDescription osd = new OpenSearchDescription();
+
+            osd.ShortName = collection.TypeName + " Elastic Catalogue";
+            osd.Attribution = "Terradue";
+            osd.Contact = "info@terradue.com";
+            osd.Developer = "Terradue GeoSpatial Development Team";
+            osd.SyndicationRight = "open";
+            osd.AdultContent = "false";
+            osd.Language = "en-us";
+            osd.OutputEncoding = "UTF-8";
+            osd.InputEncoding = "UTF-8";
+            osd.Description = string.Format("This Search Service performs queries in the index {0}. There are several URL templates that return the results in different formats." +
+                                            "This search service is in accordance with the OGC 10-032r3 specification.", request.IndexName);
+
+            OpenSearchEngine ose = new OpenSearchEngine();
+            ose.LoadPlugins();
+
+            var osee = ose.GetFirstExtensionByTypeAbility(collection.GetOpenSearchResultType());
+            if (osee == null) {
+                throw new InvalidTypeSearchException(request.TypeName, string.Format("OpenSearch Engine for Type '{0}' is not found in the extensions. Check that plugins are loaded", request.TypeName));
+            }
+
+            var searchExtensions = ose.Extensions;
+            List<OpenSearchDescriptionUrl> urls = new List<OpenSearchDescriptionUrl>();
+
+            NameValueCollection parameters = collection.GetOpenSearchParameters(collection.DefaultMimeType);
+
+            UriBuilder searchUrl = new UriBuilder(string.Format("{0}/catalogue/{1}/{2}/search", ecf.RootWebConfig.AppSettings.Settings["baseUrl"].Value, request.IndexName, request.TypeName));
+            NameValueCollection queryString = HttpUtility.ParseQueryString("?format=format");
+            parameters.AllKeys.FirstOrDefault(k => {
+                queryString.Add(parameters[k], "{"+k+"?}");
+                return false;
+            });
+
+            foreach (Type type in searchExtensions.Keys) {
+
+                queryString.Set("format", searchExtensions[type].Identifier);
+                searchUrl.Query = queryString.ToString();
+                urls.Add(new OpenSearchDescriptionUrl(searchExtensions[type].DiscoveryContentType, 
+                                                      searchUrl.ToString(),
+                                                      "search"));
+
+            }
+            osd.Url = urls.ToArray();
 
             return new HttpResult(osd, "application/opensearchdescription+xml");
 
