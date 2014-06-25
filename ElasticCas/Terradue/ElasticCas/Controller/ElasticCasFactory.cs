@@ -20,9 +20,13 @@ namespace Terradue.ElasticCas {
 
     public class ElasticCasFactory {
         ElasticConnection esConnection;
+
         internal System.Configuration.Configuration RootWebConfig { get; set; }
+
         internal System.Configuration.KeyValueConfigurationElement EsHost { get; set; }
+
         internal System.Configuration.KeyValueConfigurationElement EsPort { get; set; }
+
         protected readonly ILog logger;
 
         internal ElasticCasFactory(string name) {
@@ -45,7 +49,7 @@ namespace Terradue.ElasticCas {
 
             esConnection = new ElasticConnection(EsHost.Value, int.Parse(EsPort.Value));
             logger.InfoFormat("New ElasticSearch Connection from {0}", name);
-		}
+        }
 
         public ElasticConnection EsConnection {
             get {
@@ -55,23 +59,27 @@ namespace Terradue.ElasticCas {
 
         internal OperationResult CreateCatalogueIndex(string indexName, string[] typeNames, bool destroy = false) {
 
-			if (IsIndexExists(indexName, esConnection)) {
+            if (IsIndexExists(indexName, esConnection)) {
 
-				if (destroy) {
-					esConnection.Delete(Commands.Delete(indexName));
-				}
-				else {
+                if (destroy) {
+                    esConnection.Delete(Commands.Delete(indexName));
+                } else {
                     throw new InvalidOperationException(string.Format("'{0}' index already exists and cannot be overriden without data loss", indexName));
-				}
-			}
+                }
+            }
 
-			string command = Commands.CreateIndex(indexName);
+            string result;
+
+            string command = Commands.CreateIndex(indexName);
 
             string jsondata = new IndexSettingsBuilder().Analysis(a => a.Analyzer(an => an.Custom("default", custom => custom
                                                                                                   .Tokenizer(DefaultTokenizers.standard)
                                                                                                   .Filter(DefaultTokenFilters.standard)))).Build();
-
-            esConnection.Put(command, jsondata);
+            try {
+                result = esConnection.Put(command, jsondata);
+            } catch (Exception e) {
+                throw e;
+            }
 
             // Init mapp    ings for each types declared
 
@@ -81,8 +89,11 @@ namespace Terradue.ElasticCas {
                     IElasticDocument doc = (IElasticDocument)node.CreateInstance();
                     command = Commands.PutMapping(indexName, doc.TypeName);
                     jsondata = doc.GetMapping();
-
-                    esConnection.Put(command, jsondata);
+                    try {
+                        result = esConnection.Put(command, jsondata);
+                    } catch (Exception e) {
+                        throw e;
+                    }
                 }
             } else {
                 foreach (TypeExtensionNode node in AddinManager.GetExtensionNodes (typeof(IElasticDocument))) {
@@ -97,31 +108,30 @@ namespace Terradue.ElasticCas {
                 }
             }
 
-            return esConnection.Get(Commands.GetMapping(new string[]{indexName}, typeNames));
-
-		}
-
-		internal static bool IsIndexExists(string indexName, ElasticConnection connection) {
-			try {
-				connection.Head(new IndexExistsCommand(indexName));
-				return true;
-			} catch (OperationException ex) {
-				if (ex.HttpStatusCode == 404)
-					return false;
-				throw;
-			}
-		}
-
-        public static void LoadPlugins(AppHost application) {
-
-            foreach (TypeExtensionNode node in AddinManager.GetExtensionNodes (typeof(IElasticDocument))) {
-                IElasticDocument doc = (IElasticDocument)node.CreateInstance();
-                Types.SetType(application, doc);
-            }
+            return esConnection.Get(Commands.GetMapping(new string[]{ indexName }, typeNames));
 
         }
 
-        public static IElasticDocumentCollection GetDtoByTypeName(string typeName, Dictionary<string, object> parameters = null) {
+        internal static bool IsIndexExists(string indexName, ElasticConnection connection) {
+            try {
+                connection.Head(new IndexExistsCommand(indexName));
+                return true;
+            } catch (OperationException ex) {
+                if (ex.HttpStatusCode == 404)
+                    return false;
+                throw;
+            }
+        }
+
+        public static void LoadPlugins(AppHost application) {
+
+            //foreach (TypeExtensionNode node in AddinManager.GetExtensionNodes (typeof(IElasticDocument))) {
+            //    IElasticDocument doc = (IElasticDocument)node.CreateInstance();
+            //}
+
+        }
+
+        public static IElasticDocumentCollection GetElasticDocumentCollectionByTypeName(string typeName, Dictionary<string, object> parameters = null) {
             foreach (TypeExtensionNode node in AddinManager.GetExtensionNodes (typeof(IElasticDocumentCollection))) {
                 IElasticDocumentCollection docs = (IElasticDocumentCollection)node.CreateInstance();
                 docs.Parameters = parameters;
@@ -131,5 +141,5 @@ namespace Terradue.ElasticCas {
             }
             return null;
         }
-	}
+    }
 }

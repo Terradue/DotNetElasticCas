@@ -1,15 +1,3 @@
-[submodule "externals/DotNetGeoJson"]
-	path = externals/DotNetGeoJson
-	url = git://github.com/Terradue/Terradue.GeoJson
-[submodule "externals/DotNetOpenSearchGeoJson"]
-	path = externals/DotNetOpenSearchGeoJson
-	url = git@github.com:Terradue/DotNetOpenSearchGeoJson.git
-[submodule "externals/ElasticCas.EO"]
-	path = externals/ElasticCas.EO
-	url = git@github.com:Terradue/ElasticCas.EO.git
-[submodule "externals/DotNetEarthObservation"]
-	path = externals/DotNetEarthObservation
-	url = git@github.com:Terradue/DotNetEarthObservation.git
-[submodule "externals/DotNetOpenSearch"]
-	path = externals/DotNetOpenSearch
-	url = git@github.com:Terradue/DotNetOpenSearch.git
+[submodule "Terradue.ServiceModel.Syndication"]
+	path = Terradue.ServiceModel.Syndication
+	url = git@github.com:Terradue/DotNetSyndication.git

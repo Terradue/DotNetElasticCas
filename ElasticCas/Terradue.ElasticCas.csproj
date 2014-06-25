@@ -96,6 +96,7 @@
     <Compile Include="Terradue\ElasticCas\Services\OpenSearchQueryRequestService.cs" />
     <Compile Include="Terradue\ElasticCas\OpenSearch\ElasticOpenSearchRequest.cs" />
     <Compile Include="Terradue\ElasticCas\OpenSearch\ElasticOpenSearchResponse.cs" />
+    <Compile Include="Terradue\ElasticCas\Request\Catalogue.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />

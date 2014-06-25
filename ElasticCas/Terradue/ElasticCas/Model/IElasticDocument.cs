@@ -20,7 +20,6 @@ namespace Terradue.ElasticCas.Model {
         string TypeName { get; }
 
         string GetMapping();
-
     }
 
     [TypeExtensionPoint()]
@@ -32,7 +31,7 @@ namespace Terradue.ElasticCas.Model {
 
         Dictionary <string, object> Parameters { get; set; }
 
-        Collection<IElasticDocument> CreateFromOpenSearchResult(IOpenSearchResultCollection results);
+        Collection<IElasticDocument> CreateFromOpenSearchResultCollection(IOpenSearchResultCollection results);
 
         Type GetOpenSearchResultType();
 

@@ -23,5 +23,11 @@ namespace Terradue.ElasticCas.Request {
             set;
         }
 	}
+
+    [Route("/catalogue/{IndexName}", "DELETE")]
+    public class DeleteIndexRequest : IReturn<OperationResult>{
+
+        public string IndexName { get; set; }
+    }
 }
 

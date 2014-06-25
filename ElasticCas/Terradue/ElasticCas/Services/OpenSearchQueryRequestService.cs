@@ -20,7 +20,7 @@ namespace Terradue.ElasticCas.Service {
 
         public object Get(OpenSearchQueryRequest request) {
 
-            IElasticDocumentCollection collection = ElasticCasFactory.GetDtoByTypeName(request.TypeName);
+            IElasticDocumentCollection collection = ElasticCasFactory.GetElasticDocumentCollectionByTypeName(request.TypeName);
             collection.IndexName = request.IndexName;
             if (collection == null) {
                 throw new InvalidTypeModelException(request.TypeName, string.Format("Type '{0}' is not found in the type extensions. Check that plugins are loaded", request.TypeName));

@@ -20,6 +20,7 @@ using Terradue.OpenSearch.Engine;
 using Terradue.ElasticCas.Model;
 using Terradue.OpenSearch.GeoJson.Extensions;
 using System.Collections.ObjectModel;
+using Terradue.OpenSearch.Response;
 
 namespace Terradue.ElasticCas.Service {
     [Api("Type Ingestion Service")]
@@ -54,18 +55,39 @@ namespace Terradue.ElasticCas.Service {
         [AddHeader(ContentType = ContentType.Json)]
         public object Post(SingleIngestionRequest request) {
 
-            string command = Commands.Index(request.doc.IndexName, request.doc.TypeName, request.doc.Id);
+            OpenSearchEngine ose = new OpenSearchEngine();
+            ose.LoadPlugins();
 
-            string jsondata = request.doc.ToJson();
-			string response;
+            IOpenSearchEngineExtension osee = ose.GetExtensionByDiscoveryContentType(Request.ContentType);
+            if (osee == null)
+                throw new NotImplementedException(string.Format("No OpenSearch extension found for reading {0}", Request.ContentType));
 
-			try {
-				response = esConnection.Put(command, jsondata);
-			} catch (Exception e) {
-				throw e;
-			}
+            IElasticDocumentCollection documents = ElasticCasFactory.GetElasticDocumentCollectionByTypeName(request.TypeName);
 
-			return response;
+            if ( documents == null )
+                throw new InvalidTypeModelException(request.TypeName, string.Format("Type '{0}' is not found in the type extensions. Check that plugins are loaded", request.TypeName));
+
+            MemoryOpenSearchResponse payload = new MemoryOpenSearchResponse(Request.InputStream, Request.ContentType);
+
+            IOpenSearchResultCollection results = osee.TransformResponse(payload);
+
+            Collection<IElasticDocument> docs = documents.CreateFromOpenSearchResultCollection(results);
+
+            string command = new BulkCommand(index: request.IndexName, type: request.TypeName);
+
+            string bulkJson = 
+                new BulkBuilder(serializer)
+                    .BuildCollection(docs,
+                                     (builder, item) => builder.Index(data: item, id: item.Id.Replace('.', '_')));
+
+            string response;
+
+            try {
+                response = esConnection.Post(command, bulkJson);
+            } catch (Exception e) {
+                throw e;
+            }
+            return response;
 		}
 
         [AddHeader(ContentType = ContentType.Json)]
@@ -79,7 +101,7 @@ namespace Terradue.ElasticCas.Service {
 
             IOpenSearchable entity = new GenericOpenSearchable(url, ose);
 
-            IElasticDocumentCollection collection = ElasticCasFactory.GetDtoByTypeName(request.TypeName);
+            IElasticDocumentCollection collection = ElasticCasFactory.GetElasticDocumentCollectionByTypeName(request.TypeName);
 
             if ( collection == null )
                 throw new InvalidTypeModelException(request.TypeName, string.Format("Type '{0}' is not found in the type extensions. Check that plugins are loaded", request.TypeName));
@@ -90,7 +112,7 @@ namespace Terradue.ElasticCas.Service {
             OpenSearchFactory.RemoveLinksByRel(osres, "self");
             OpenSearchFactory.RemoveLinksByRel(osres, "search");
 
-            Collection<IElasticDocument> documents = collection.CreateFromOpenSearchResult(osres.Result);
+            Collection<IElasticDocument> documents = collection.CreateFromOpenSearchResultCollection(osres.Result);
 
             string command = new BulkCommand(index: request.IndexName, type: request.TypeName);
 

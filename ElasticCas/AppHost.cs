@@ -45,12 +45,12 @@ namespace Terradue.ElasticCas {
             WebConfig =
 				System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration(null);
 
-            JsConfig.ExcludeTypeInfo = false;
+            //JsConfig.ExcludeTypeInfo = false;
             JsConfig.ConvertObjectTypesIntoStringDictionary = true;
             JsConfig.ThrowOnDeserializationError = true;
             JsConfig.IncludePublicFields = true;
             JsConfig.EmitCamelCaseNames = true;
-            JsConfig.IncludeTypeInfo = true;
+            //JsConfig.IncludeTypeInfo = true;
 
             //Permit modern browsers (e.g. Firefox) to allow sending of any REST HTTP Method
             base.SetConfig(new EndpointHostConfig {

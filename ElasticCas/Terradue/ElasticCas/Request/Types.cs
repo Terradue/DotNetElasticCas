@@ -15,44 +15,12 @@ using Terradue.ElasticCas.Service;
 
 namespace Terradue.ElasticCas.Request {
 
-    public static class Types {
 
-        /// <summary>
-        /// Sets the type.
-        /// </summary>
-        /// <param name="application">Application.</param>
-        /// <param name="doc">Document.</param>
-        public static void SetType(AppHost application, IElasticDocument doc){
-
-            string baseRoute = "/catalogue/{IndexName}/" + doc.TypeName;
-            application.Routes.Add(doc.GetType(), baseRoute + "/{Id}", "PUT");
-            application.Routes.Add(doc.GetType(), baseRoute, "POST");
-
-            application.RequestBinders.Add(doc.GetType(), httpReq => {
-                IElasticDocument requestDto = (IElasticDocument)EndpointHandlerBase.DeserializeHttpRequest(doc.GetType(), httpReq, httpReq.ContentType);
-                requestDto.IndexName = httpReq.PathInfo.Split('/')[2];
-                return new SingleIngestionRequest{doc=requestDto};
-            });
-            EndpointHost.Metadata.Add(typeof(TypesIngestionService), doc.GetType(), typeof(IElasticDocument));
-
-        }
-
-        /// <summary>
-        /// Sets the type.
-        /// </summary>
-        /// <param name="application">Application.</param>
-        /// <param name="docs">Documents.</param>
-        public static void SetType(AppHost application, IElasticDocumentCollection docs){
-
-            string baseRoute = "/catalogue/{IndexName}/" + docs.TypeName;
-            application.Routes.Add(typeof(IElasticDocumentCollection), baseRoute + "/_bulk", "POST");
-
-        }
-       
-    }
-
+    [Route("/catalogue/{IndexName}/{TypeName}", "POST")]
     public class SingleIngestionRequest : IReturn<IElasticDocument> {
-        public IElasticDocument doc;
+        public string IndexName { get; set; }
+
+        public string TypeName { get; set; }
     }
 
 

@@ -36,6 +36,11 @@ namespace Terradue.ElasticCas.Service {
 		public object Put(CreateIndexRequest request) {
             return ecf.CreateCatalogueIndex(request.IndexName, request.TypeNames);
 		}
+
+        [AddHeader(ContentType=ContentType.Json)]
+        public object Delete(DeleteIndexRequest request) {
+            return esConnection.Delete(Commands.Delete(request.IndexName));
+        }
 	}
 }
 
