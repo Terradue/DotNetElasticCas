@@ -25,7 +25,7 @@ using Terradue.OpenSearch.Response;
 namespace Terradue.ElasticCas.Service {
     [Api("Type Ingestion Service")]
     [Restrict(EndpointAttributes.InSecure | EndpointAttributes.InternalNetworkAccess | EndpointAttributes.Json,
-           EndpointAttributes.Secure | EndpointAttributes.External | EndpointAttributes.Json)]
+              EndpointAttributes.Secure | EndpointAttributes.External | EndpointAttributes.Json)]
     public class TypesIngestionService : BaseService {
         public TypesIngestionService() : base("Type Ingestion Service") {
 
@@ -55,58 +55,61 @@ namespace Terradue.ElasticCas.Service {
         [AddHeader(ContentType = ContentType.Json)]
         public object Post(SingleIngestionRequest request) {
 
-            OpenSearchEngine ose = new OpenSearchEngine();
-            ose.LoadPlugins();
+            string response = "";
 
-            IOpenSearchEngineExtension osee = ose.GetExtensionByDiscoveryContentType(Request.ContentType);
-            if (osee == null)
-                throw new NotImplementedException(string.Format("No OpenSearch extension found for reading {0}", Request.ContentType));
+            try {
+                OpenSearchEngine ose = new OpenSearchEngine();
+                ose.LoadPlugins();
 
-            IElasticDocumentCollection documents = ElasticCasFactory.GetElasticDocumentCollectionByTypeName(request.TypeName);
+                IOpenSearchEngineExtension osee = ose.GetExtensionByDiscoveryContentType(Request.ContentType);
+                if (osee == null)
+                    throw new NotImplementedException(string.Format("No OpenSearch extension found for reading {0}", Request.ContentType));
 
-            if ( documents == null )
-                throw new InvalidTypeModelException(request.TypeName, string.Format("Type '{0}' is not found in the type extensions. Check that plugins are loaded", request.TypeName));
+                IElasticDocumentCollection documents = ElasticCasFactory.GetElasticDocumentCollectionByTypeName(request.TypeName);
 
-            MemoryOpenSearchResponse payload = new MemoryOpenSearchResponse(Request.InputStream, Request.ContentType);
+                if (documents == null)
+                    throw new InvalidTypeModelException(request.TypeName, string.Format("Type '{0}' is not found in the type extensions. Check that plugins are loaded", request.TypeName));
 
-            IOpenSearchResultCollection results = osee.TransformResponse(payload);
+                MemoryOpenSearchResponse payload = new MemoryOpenSearchResponse(Request.InputStream, Request.ContentType);
 
-            Collection<IElasticDocument> docs = documents.CreateFromOpenSearchResultCollection(results);
+                IOpenSearchResultCollection results = osee.ReadNative(payload);
 
-            string command = new BulkCommand(index: request.IndexName, type: request.TypeName);
+                Collection<IElasticDocument> docs = documents.CreateFromOpenSearchResultCollection(results);
 
-            string bulkJson = 
-                new BulkBuilder(serializer)
+                string command = new BulkCommand(index: request.IndexName, type: request.TypeName);
+
+                string bulkJson = 
+                    new BulkBuilder(serializer)
                     .BuildCollection(docs,
                                      (builder, item) => builder.Index(data: item, id: item.Id.Replace('.', '_')));
 
-            string response;
 
-            try {
+
+
                 response = esConnection.Post(command, bulkJson);
             } catch (Exception e) {
                 throw e;
             }
             return response;
-		}
+        }
 
         [AddHeader(ContentType = ContentType.Json)]
         public object Post(TypeImportRequest request) {
 
-			OpenSearchEngine ose = new OpenSearchEngine();
+            OpenSearchEngine ose = new OpenSearchEngine();
             ose.LoadPlugins();
-			ose.DefaultTimeOut = 60000;
+            ose.DefaultTimeOut = 60000;
 
-			OpenSearchUrl url = new OpenSearchUrl(request.url); 
+            OpenSearchUrl url = new OpenSearchUrl(request.url); 
 
             IOpenSearchable entity = new GenericOpenSearchable(url, ose);
 
             IElasticDocumentCollection collection = ElasticCasFactory.GetElasticDocumentCollectionByTypeName(request.TypeName);
 
-            if ( collection == null )
+            if (collection == null)
                 throw new InvalidTypeModelException(request.TypeName, string.Format("Type '{0}' is not found in the type extensions. Check that plugins are loaded", request.TypeName));
 
-            IOpenSearchResult osres = ose.Query(entity,new NameValueCollection());
+            IOpenSearchResult osres = ose.Query(entity, new NameValueCollection());
             OpenSearchFactory.RemoveLinksByRel(osres, "alternate");
             OpenSearchFactory.RemoveLinksByRel(osres, "via");
             OpenSearchFactory.RemoveLinksByRel(osres, "self");
@@ -122,45 +125,45 @@ namespace Terradue.ElasticCas.Service {
                                      (builder, item) => builder.Index(data: item, id: item.Id.Replace('.', '_'))
 					                 // You can apply any custom logic here
 					                 // to generate Indexes, Creates or Deletes.
-                                    );
+                );
 
-			string response;
+            string response;
 
-			try {
-				response = esConnection.Post(command, bulkJson);
-			} catch (Exception e) {
-				throw e;
-			}
+            try {
+                response = esConnection.Post(command, bulkJson);
+            } catch (Exception e) {
+                throw e;
+            }
             return response;
 
-		}
-	}
+        }
+    }
 
     [Api("Type Retrieval Service")]
-	[Restrict(EndpointAttributes.InSecure | EndpointAttributes.InternalNetworkAccess | EndpointAttributes.Json,
-	          EndpointAttributes.Secure | EndpointAttributes.External | EndpointAttributes.Json)]
-	public class TypeRetrievalService : BaseService {
+    [Restrict(EndpointAttributes.InSecure | EndpointAttributes.InternalNetworkAccess | EndpointAttributes.Json,
+           EndpointAttributes.Secure | EndpointAttributes.External | EndpointAttributes.Json)]
+    public class TypeRetrievalService : BaseService {
         public TypeRetrievalService() : base("Type Retrieval Service") {
 
-		}
+        }
 
         [AddHeader(ContentType = ContentType.Json)]
         public object Get(TypeGetRequest request) {
 
-			string response;
-			string result;
+            string response;
+            string result;
 
-			response = esConnection.Get(UrlBuilder.BuildUrlPath(new string[] {
-				request.IndexName,
+            response = esConnection.Get(UrlBuilder.BuildUrlPath(new string[] {
+                request.IndexName,
                 request.TypeName,
-				request.Id
-			}));
-			var resultObject = JsonObject.Parse(response);
-			result = resultObject.GetUnescaped("_source");
+                request.Id
+            }));
+            var resultObject = JsonObject.Parse(response);
+            result = resultObject.GetUnescaped("_source");
 
 
-			return result;
-		}
+            return result;
+        }
     }
 }
 

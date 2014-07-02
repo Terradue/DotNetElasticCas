@@ -75,7 +75,7 @@ namespace Terradue.ElasticCas {
             var command = new CountCommand(IndexName, TypeName);
             var result = esConnection.Get(command, queryJson);
 
-            JsonNetSerializer ser= new JsonNetSerializer();
+            JsonNetSerializer ser = new JsonNetSerializer();
             return ser.ToCountResult(result).count;
         }
 
@@ -85,9 +85,10 @@ namespace Terradue.ElasticCas {
 
             var command = new SearchCommand(IndexName, TypeName);
 
-            var result = esConnection.Post(command, queryJson);
-
+            OperationResult result = esConnection.Post(command, queryJson);
             return new ElasticOpenSearchResponse(result);
+
+
 
         }
 

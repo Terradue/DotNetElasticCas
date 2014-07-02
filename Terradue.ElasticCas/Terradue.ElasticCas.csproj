@@ -59,9 +59,9 @@
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Addins, Version=0.6.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
+    <Reference Include="Mono.Addins, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
     <Reference Include="Terradue.ElasticCas.EarthObservation">
-      <HintPath>..\externals\ElasticCas.EO\Terradue.ElasticCas.EarthObservation\bin\Terradue.ElasticCas.EarthObservation.dll</HintPath>
+      <HintPath>..\Terradue.ElasticCas.EarthObservation\bin\Terradue.ElasticCas.EarthObservation.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -118,24 +118,24 @@
     <Folder Include="Terradue\ElasticCas\OpenSearch\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\externals\DotNetGeoJson\Terradue.GeoJson\Terradue.GeoJson.csproj">
-      <Project>{26AD29FF-862F-46D9-9F25-473E2977A7C3}</Project>
-      <Name>Terradue.GeoJson</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\externals\DotNetOpenSearch\Terradue.OpenSearch\Terradue.OpenSearch.csproj">
+    <None Include="Terradue.ElasticCas.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\externals\Terradue.OpenSearch\Terradue.OpenSearch\Terradue.OpenSearch.csproj">
       <Project>{997A44FD-EE4A-490A-855B-88305E0CD269}</Project>
       <Name>Terradue.OpenSearch</Name>
     </ProjectReference>
-    <ProjectReference Include="..\externals\DotNetOpenSearchGeoJson\Terradue.OpenSearch.GeoJson\Terradue.OpenSearch.GeoJson.csproj">
+    <ProjectReference Include="..\externals\Terradue.OpenSearch.GeoJson\Terradue.OpenSearch.GeoJson\Terradue.OpenSearch.GeoJson.csproj">
       <Project>{B932B7CD-4DDA-4084-AFBC-0FFCF4310C2E}</Project>
       <Name>Terradue.OpenSearch.GeoJson</Name>
     </ProjectReference>
-    <ProjectReference Include="..\externals\DotNetOpenSearch\externals\DotNetSyndication\Terradue.ServiceModel.Syndication\Terradue.ServiceModel.Syndication.csproj">
+    <ProjectReference Include="..\externals\Terradue.ServiceModel.Syndication\Terradue.ServiceModel.Syndication\Terradue.ServiceModel.Syndication.csproj">
       <Project>{729A82DF-D3CE-4A1A-BA83-0508F0362DB5}</Project>
       <Name>Terradue.ServiceModel.Syndication</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Terradue.ElasticCas.csproj" />
+    <ProjectReference Include="..\externals\Terradue.GeoJson\Terradue.GeoJson\Terradue.GeoJson.csproj">
+      <Project>{26AD29FF-862F-46D9-9F25-473E2977A7C3}</Project>
+      <Name>Terradue.GeoJson</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

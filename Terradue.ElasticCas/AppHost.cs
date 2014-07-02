@@ -66,7 +66,7 @@ namespace Terradue.ElasticCas {
                 WebHostUrl = WebConfig.AppSettings.Settings["baseUrl"].Value,
                 WriteErrorsToResponse = false, //custom exception handling
                 DefaultContentType = ServiceStack.Common.Web.ContentType.Json,
-                ReturnsInnerException = true,
+                ReturnsInnerException = false,
                 MapExceptionToStatusCode = {
                     { typeof(NotFoundException), 404 },
                 }
