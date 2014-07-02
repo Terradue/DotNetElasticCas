@@ -7,7 +7,6 @@ using ServiceStack.Text;
 using PlainElastic.Net.Serialization;
 using ServiceStack.Common.Web;
 using PlainElastic.Net.Utils;
-using Newtonsoft.Json;
 using Terradue.OpenSearch;
 using Terradue.OpenSearch.Engine.Extensions;
 using System.Security.Policy;
