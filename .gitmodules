@@ -16,3 +16,6 @@
 [submodule "Terradue.ElasticCas.EarthObservation"]
 	path = Terradue.ElasticCas.EarthObservation
 	url = git@github.com:Terradue/ElasticCas.EO.git
+[submodule "Terradue.GeoJson"]
+	path = Terradue.GeoJson
+	url = git@github.com:Terradue/DotNetGeoJson.git
