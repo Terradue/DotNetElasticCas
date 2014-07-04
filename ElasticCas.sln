@@ -3,19 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.ElasticCas", "Terradue.ElasticCas\Terradue.ElasticCas.csproj", "{3ED47B7C-208B-4C14-A3FD-3CB92FF84A93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.ElasticCas.EarthObservation", "Terradue.ElasticCas.EarthObservation\Terradue.ElasticCas.EarthObservation.csproj", "{BE41CBD0-AB76-4872-BD87-BCDAA7CDF447}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.ElasticCas.EarthObservation", "ElasticCas.EO\Terradue.ElasticCas.EarthObservation\Terradue.ElasticCas.EarthObservation.csproj", "{BE41CBD0-AB76-4872-BD87-BCDAA7CDF447}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.Metadata.EarthObservation", "Terradue.Metadata.EarthObservation\Terradue.Metadata.EarthObservation.csproj", "{E084B86A-8B40-414E-95FA-760F3C6BFDCB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.Metadata.EarthObservation", "DotNetEarthObservation\Terradue.Metadata.EarthObservation\Terradue.Metadata.EarthObservation.csproj", "{E084B86A-8B40-414E-95FA-760F3C6BFDCB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.OpenSearch", "Terradue.OpenSearch\Terradue.OpenSearch.csproj", "{997A44FD-EE4A-490A-855B-88305E0CD269}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.OpenSearch", "DotNetOpenSearch\Terradue.OpenSearch\Terradue.OpenSearch.csproj", "{997A44FD-EE4A-490A-855B-88305E0CD269}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.OpenSearch.GeoJson", "Terradue.OpenSearch.GeoJson\Terradue.OpenSearch.GeoJson.csproj", "{B932B7CD-4DDA-4084-AFBC-0FFCF4310C2E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.OpenSearch.GeoJson", "DotNetOpenSearchGeoJson\Terradue.OpenSearch.GeoJson\Terradue.OpenSearch.GeoJson.csproj", "{B932B7CD-4DDA-4084-AFBC-0FFCF4310C2E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.OpenSearch.Kml", "Terradue.OpenSearch.Kml\Terradue.OpenSearch.Kml.csproj", "{F76F0148-0095-47F6-81E6-AEFC4C49DF11}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.OpenSearch.Kml", "DotNetOpenSearchKml\Terradue.OpenSearch.Kml\Terradue.OpenSearch.Kml.csproj", "{F76F0148-0095-47F6-81E6-AEFC4C49DF11}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.ServiceModel.Syndication", "Terradue.ServiceModel.Syndication\Terradue.ServiceModel.Syndication.csproj", "{729A82DF-D3CE-4A1A-BA83-0508F0362DB5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.ServiceModel.Syndication", "DotNetSyndication\Terradue.ServiceModel.Syndication\Terradue.ServiceModel.Syndication.csproj", "{729A82DF-D3CE-4A1A-BA83-0508F0362DB5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.GeoJson", "Terradue.GeoJson\Terradue.GeoJson.csproj", "{26AD29FF-862F-46D9-9F25-473E2977A7C3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.GeoJson", "DotNetGeoJson\Terradue.GeoJson\Terradue.GeoJson.csproj", "{26AD29FF-862F-46D9-9F25-473E2977A7C3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

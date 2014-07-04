@@ -1,0 +1,18 @@
+[submodule "DotNetOpenSearch"]
+	path = DotNetOpenSearch
+	url = git@github.com:Terradue/DotNetOpenSearch.git
+[submodule "ElasticCas.EO"]
+	path = ElasticCas.EO
+	url = git@github.com:Terradue/ElasticCas.EO.git
+[submodule "DotNetOpenSearchGeoJson"]
+	path = DotNetOpenSearchGeoJson
+	url = git@github.com:Terradue/DotNetOpenSearchGeoJson.git
+[submodule "DotNetOpenSearchKml"]
+	path = DotNetOpenSearchKml
+	url = git@github.com:Terradue/DotNetOpenSearchKml.git
+[submodule "DotNetEarthObservation"]
+	path = DotNetEarthObservation
+	url = git@github.com:Terradue/DotNetEarthObservation.git
+[submodule "DotNetSyndication"]
+	path = DotNetSyndication
+	url = git@github.com:Terradue/DotNetSyndication.git
