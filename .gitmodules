@@ -19,3 +19,6 @@
 [submodule "externals/Terradue.GeoJson"]
 	path = externals/Terradue.GeoJson
 	url = git@github.com:Terradue/DotNetGeoJson.git
+[submodule "DotNetOpenSearch"]
+	path = DotNetOpenSearch
+	url = git@github.com:Terradue/DotNetOpenSearch.git
