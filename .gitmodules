@@ -16,3 +16,6 @@
 [submodule "DotNetSyndication"]
 	path = DotNetSyndication
 	url = git@github.com:Terradue/DotNetSyndication.git
+[submodule "DotNetGeoJson"]
+	path = DotNetGeoJson
+	url = git@github.com:Terradue/DotNetGeoJson.git
