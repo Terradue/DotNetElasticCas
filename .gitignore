@@ -9,3 +9,5 @@ packages
 /packages
 
 /Terradue.ElasticCas/bin
+
+/Terradue.ElasticCas/obj/
