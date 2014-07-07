@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using PlainElastic.Net.Serialization;
 using ServiceStack.Text;
 using ServiceStack.Text.Json;
-using Terradue.GeoJson.Feature;
 using Terradue.OpenSearch.Result;
 using Terradue.ServiceModel.Syndication;
 using Terradue.ElasticCas.Model;

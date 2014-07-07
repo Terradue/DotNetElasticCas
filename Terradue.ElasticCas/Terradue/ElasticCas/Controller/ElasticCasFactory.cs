@@ -5,8 +5,6 @@ using ServiceStack.Text;
 using PlainElastic.Net.Serialization;
 using PlainElastic.Net.Mappings;
 using System.Collections.Generic;
-using Terradue.GeoJson.Feature;
-using Terradue.GeoJson.CoordinateReferenceSystem;
 using Mono.Addins;
 using Terradue.ElasticCas.Model;
 using ServiceStack.ServiceHost;
