@@ -1,6 +1,6 @@
 #/bin/sh
 
-cd Terradue.OpenSeach.GeoJson
+cd Terradue.OpenSearch.GeoJson
 xbuild
 cd -
 cd Terradue.OpenSearch.Kml
