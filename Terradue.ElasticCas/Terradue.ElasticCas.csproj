@@ -70,6 +70,9 @@
     <Reference Include="Terradue.ServiceModel.Syndication">
       <HintPath>..\packages\Terradue.ServiceModel.Syndication.1.0.0.0\lib\net40\Terradue.ServiceModel.Syndication.dll</HintPath>
     </Reference>
+    <Reference Include="Terradue.ElasticCas.EarthObservation">
+      <HintPath>..\Terradue.ElasticCas.EarthObservation\Terradue.ElasticCas.EarthObservation\bin\Terradue.ElasticCas.EarthObservation.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
