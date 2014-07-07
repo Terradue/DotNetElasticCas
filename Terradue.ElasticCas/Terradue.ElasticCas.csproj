@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="RestorePackages;Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -20,6 +20,11 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="BeforeBuild" command="nuget restore -SolutionDirectory ${ProjectDir}/.. -PackagesDirectory ${ProjectDir}/../packages" workingdir="" />
+      </CustomCommands>
+    </CustomCommands>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -28,6 +33,11 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="BeforeBuild" command="nuget restore -SolutionDirectory ${ProjectDir}/.. -PackagesDirectory ${ProjectDir}/../packages" workingdir="" />
+      </CustomCommands>
+    </CustomCommands>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -57,8 +67,8 @@
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Addins, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
-    <Reference Include="Terradue.ElasticCas.EarthObservation">
-      <HintPath>..\Terradue.ElasticCas.EarthObservation\bin\Terradue.ElasticCas.EarthObservation.dll</HintPath>
+    <Reference Include="Terradue.ServiceModel.Syndication">
+      <HintPath>..\packages\Terradue.ServiceModel.Syndication.1.0.0.0\lib\net40\Terradue.ServiceModel.Syndication.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -118,21 +128,14 @@
     <None Include="Terradue.ElasticCas.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\externals\Terradue.OpenSearch\Terradue.OpenSearch\Terradue.OpenSearch.csproj">
+    <ProjectReference Include="..\Terradue.OpenSearch\Terradue.OpenSearch\Terradue.OpenSearch.csproj">
       <Project>{997A44FD-EE4A-490A-855B-88305E0CD269}</Project>
       <Name>Terradue.OpenSearch</Name>
     </ProjectReference>
-    <ProjectReference Include="..\externals\Terradue.OpenSearch.GeoJson\Terradue.OpenSearch.GeoJson\Terradue.OpenSearch.GeoJson.csproj">
+    <ProjectReference Include="..\Terradue.OpenSearch.GeoJson\Terradue.OpenSearch.GeoJson\Terradue.OpenSearch.GeoJson.csproj">
       <Project>{B932B7CD-4DDA-4084-AFBC-0FFCF4310C2E}</Project>
       <Name>Terradue.OpenSearch.GeoJson</Name>
     </ProjectReference>
-    <ProjectReference Include="..\externals\Terradue.ServiceModel.Syndication\Terradue.ServiceModel.Syndication\Terradue.ServiceModel.Syndication.csproj">
-      <Project>{729A82DF-D3CE-4A1A-BA83-0508F0362DB5}</Project>
-      <Name>Terradue.ServiceModel.Syndication</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\externals\Terradue.GeoJson\Terradue.GeoJson\Terradue.GeoJson.csproj">
-      <Project>{26AD29FF-862F-46D9-9F25-473E2977A7C3}</Project>
-      <Name>Terradue.GeoJson</Name>
-    </ProjectReference>
   </ItemGroup>
+  <Import Project="$(ProjectDir)\..\.nuget\NuGet.targets" Condition="Exists('$(ProjectDir)\..\.nuget\NuGet.targets')" />
 </Project>
