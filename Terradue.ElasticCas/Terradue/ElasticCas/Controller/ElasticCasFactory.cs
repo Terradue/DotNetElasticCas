@@ -13,6 +13,11 @@ using ServiceStack.WebHost.Endpoints;
 using Terradue.ElasticCas.Request;
 using PlainElastic.Net.IndexSettings;
 using log4net;
+using Terradue.OpenSearch.Schema;
+using Terradue.OpenSearch.Engine;
+using System.Collections.Specialized;
+using System.Web;
+using System.Linq;
 
 namespace Terradue.ElasticCas {
 
@@ -138,6 +143,66 @@ namespace Terradue.ElasticCas {
                 }
             }
             return null;
+        }
+
+        public static IElasticDocument GetElasticDocumentByTypeName(string typeName, Dictionary<string, object> parameters = null) {
+            foreach (TypeExtensionNode node in AddinManager.GetExtensionNodes (typeof(IElasticDocument))) {
+                IElasticDocument docs = (IElasticDocument)node.CreateInstance();
+                if (docs.TypeName == typeName) {
+                    return docs;
+                }
+            }
+            return null;
+        }
+
+        public OpenSearchDescription GetOpenSearchDescription (IElasticDocumentCollection collection){
+
+            OpenSearchDescription osd = new OpenSearchDescription();
+
+            osd.ShortName = collection.TypeName + " Elastic Catalogue";
+            osd.Attribution = "Terradue";
+            osd.Contact = "info@terradue.com";
+            osd.Developer = "Terradue GeoSpatial Development Team";
+            osd.SyndicationRight = "open";
+            osd.AdultContent = "false";
+            osd.Language = "en-us";
+            osd.OutputEncoding = "UTF-8";
+            osd.InputEncoding = "UTF-8";
+            osd.Description = string.Format("This Search Service performs queries in the index {0}. There are several URL templates that return the results in different formats." +
+                                            "This search service is in accordance with the OGC 10-032r3 specification.", collection.IndexName);
+
+            OpenSearchEngine ose = new OpenSearchEngine();
+            ose.LoadPlugins();
+
+            var osee = ose.GetFirstExtensionByTypeAbility(collection.GetOpenSearchResultType());
+            if (osee == null) {
+                throw new InvalidTypeSearchException(collection.TypeName, string.Format("OpenSearch Engine for Type '{0}' is not found in the extensions. Check that plugins are loaded", collection.TypeName));
+            }
+
+            var searchExtensions = ose.Extensions;
+            List<OpenSearchDescriptionUrl> urls = new List<OpenSearchDescriptionUrl>();
+
+            NameValueCollection parameters = collection.GetOpenSearchParameters(collection.DefaultMimeType);
+
+            UriBuilder searchUrl = new UriBuilder(string.Format("{0}/catalogue/{1}/{2}/search", RootWebConfig.AppSettings.Settings["baseUrl"].Value, collection.IndexName, collection.TypeName));
+            NameValueCollection queryString = HttpUtility.ParseQueryString("?format=format");
+            parameters.AllKeys.FirstOrDefault(k => {
+                queryString.Add(parameters[k], "{" + k + "?}");
+                return false;
+            });
+
+            foreach (int code in searchExtensions.Keys) {
+
+                queryString.Set("format", searchExtensions[code].Identifier);
+                searchUrl.Query = queryString.ToString();
+                urls.Add(new OpenSearchDescriptionUrl(searchExtensions[code].DiscoveryContentType, 
+                                                      searchUrl.ToString(),
+                                                      "search"));
+
+            }
+            osd.Url = urls.ToArray();
+
+            return osd;
         }
     }
 }

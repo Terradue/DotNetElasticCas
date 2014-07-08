@@ -11,6 +11,7 @@ using Terradue.ElasticCas.Model;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Support;
 using Terradue.ElasticCas.Service;
+using System.Collections.Specialized;
 
 namespace Terradue.ElasticCas.Request {
 
@@ -41,6 +42,13 @@ namespace Terradue.ElasticCas.Request {
         public string url { get; set; }
 
         public Dictionary<string, object> parameters { get; set; } 
+    }
+
+    [Route("/catalogue/{IndexName}/{TypeName}/_namespaces", "GET")]
+    public class TypeNamespacesRequest : IReturn<NameValueCollection> {
+        public string IndexName { get; set; }
+
+        public string TypeName { get; set; }
     }
 }
 
