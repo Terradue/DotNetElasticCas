@@ -60,7 +60,7 @@ namespace Terradue.ElasticCas.Service {
                 OpenSearchEngine ose = new OpenSearchEngine();
                 ose.LoadPlugins();
 
-                IOpenSearchEngineExtension osee = ose.GetExtensionByDiscoveryContentType(Request.ContentType);
+                IOpenSearchEngineExtension osee = ose.GetExtensionByContentTypeAbility(Request.ContentType);
                 if (osee == null)
                     throw new NotImplementedException(string.Format("No OpenSearch extension found for reading {0}", Request.ContentType));
 
@@ -162,6 +162,16 @@ namespace Terradue.ElasticCas.Service {
 
 
             return result;
+        }
+
+        public object Get(TypeNamespacesRequest request) {
+
+            IElasticDocument document = ElasticCasFactory.GetElasticDocumentByTypeName(request.TypeName);
+
+            if (document == null)
+                throw new InvalidTypeModelException(request.TypeName, string.Format("Type '{0}' is not found in the type extensions. Check that plugins are loaded", request.TypeName));
+                
+            return document.GetTypeNamespaces();
         }
     }
 }

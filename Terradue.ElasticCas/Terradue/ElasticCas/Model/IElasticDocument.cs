@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using Terradue.OpenSearch;
+using Terradue.OpenSearch.Schema;
 
 [assembly:AddinRoot("ElasticCas", "1.0")]
 [assembly:AddinDescription("Elastic Catalogue")]
@@ -20,10 +21,12 @@ namespace Terradue.ElasticCas.Model {
         string TypeName { get; }
 
         string GetMapping();
+
+        NameValueCollection GetTypeNamespaces();
     }
 
     [TypeExtensionPoint()]
-    public interface IElasticDocumentCollection : IOpenSearchResultCollection, IOpenSearchable {
+    public interface IElasticDocumentCollection : IOpenSearchResultCollection, IOpenSearchable, IProxiedOpenSearchable {
 
         string IndexName { get; set; }
 
@@ -36,6 +39,10 @@ namespace Terradue.ElasticCas.Model {
         Type GetOpenSearchResultType();
 
         QueryBuilder<object> BuildQuery(NameValueCollection nvc);
+
+        OpenSearchDescription ProxyOpenSearchDescription { get; set; }
+
+        string EntrySelfLinkTemplate(IOpenSearchResultItem item, OpenSearchDescription osd, string mimeType);
     }
 }
 
