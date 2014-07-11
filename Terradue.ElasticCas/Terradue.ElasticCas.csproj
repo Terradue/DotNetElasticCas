@@ -70,9 +70,6 @@
     <Reference Include="Terradue.ServiceModel.Syndication">
       <HintPath>..\packages\Terradue.ServiceModel.Syndication.1.0.0.0\lib\net40\Terradue.ServiceModel.Syndication.dll</HintPath>
     </Reference>
-    <Reference Include="Terradue.ElasticCas.EarthObservation">
-      <HintPath>..\Terradue.ElasticCas.EarthObservation\Terradue.ElasticCas.EarthObservation\bin\Terradue.ElasticCas.EarthObservation.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
@@ -88,8 +85,6 @@
     <Compile Include="Terradue\ElasticCas\Controller\ElasticCasFactory.cs" />
     <Compile Include="Terradue\ElasticCas\Model\Index.cs" />
     <Compile Include="Terradue\ElasticCas\Services\IndicesService.cs" />
-    <Compile Include="Terradue\ElasticCas\Services\ServiceStackJsonSerializer.cs" />
-    <Compile Include="Terradue\ElasticCas\Controller\JsonNetSerializer.cs" />
     <Compile Include="NotFoundException.cs" />
     <Compile Include="Terradue\ElasticCas\Services\OpenSearchDescriptionService.cs" />
     <Compile Include="AppHost.cs" />
@@ -107,6 +102,12 @@
     <Compile Include="Terradue\ElasticCas\OpenSearch\ElasticOpenSearchRequest.cs" />
     <Compile Include="Terradue\ElasticCas\OpenSearch\ElasticOpenSearchResponse.cs" />
     <Compile Include="Terradue\ElasticCas\Request\Catalogue.cs" />
+    <Compile Include="Terradue\ElasticCas\Routes\DynamicOpenSearchRoute.cs" />
+    <Compile Include="Terradue\ElasticCas\Request\Routing.cs" />
+    <Compile Include="Terradue\ElasticCas\Services\RoutingService.cs" />
+    <Compile Include="Terradue\ElasticCas\Routes\DynamicRouteRequest.cs" />
+    <Compile Include="Terradue\ElasticCas\Controller\ServiceStackJsonSerializer.cs" />
+    <Compile Include="Terradue\ElasticCas\OpenSearch\OpenSearchService.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
@@ -126,6 +127,7 @@
     <Folder Include="Terradue\ElasticCas\Request\" />
     <Folder Include="Terradue\ElasticCas\Exceptions\" />
     <Folder Include="Terradue\ElasticCas\OpenSearch\" />
+    <Folder Include="Terradue\ElasticCas\Routes\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Terradue.ElasticCas.csproj" />

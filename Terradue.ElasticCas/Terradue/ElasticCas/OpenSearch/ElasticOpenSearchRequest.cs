@@ -8,6 +8,7 @@ using Terradue.OpenSearch.Response;
 using System.IO;
 using System.Web;
 using PlainElastic.Net.Serialization;
+using Terradue.ElasticCas.Controller;
 
 namespace Terradue.ElasticCas {
     public class ElasticOpenSearchRequest : OpenSearchRequest {
@@ -75,7 +76,7 @@ namespace Terradue.ElasticCas {
             var command = new CountCommand(IndexName, TypeName);
             var result = esConnection.Get(command, queryJson);
 
-            JsonNetSerializer ser = new JsonNetSerializer();
+            ServiceStackJsonSerializer ser = new ServiceStackJsonSerializer();
             return ser.ToCountResult(result).count;
         }
 

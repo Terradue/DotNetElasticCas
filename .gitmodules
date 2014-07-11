@@ -4,12 +4,3 @@
 [submodule "Terradue.OpenSearch.GeoJson"]
 	path = Terradue.OpenSearch.GeoJson
 	url = git@github.com:Terradue/DotNetOpenSearchGeoJson.git
-[submodule "Terradue.OpenSearch.Kml"]
-	path = Terradue.OpenSearch.Kml
-	url = git@github.com:Terradue/DotNetOpenSearchKml.git
-[submodule "Terradue.Metadata.EarthObservation"]
-	path = Terradue.Metadata.EarthObservation
-	url = git@github.com:Terradue/DotNetEarthObservation.git
-[submodule "Terradue.ElasticCas.EarthObservation"]
-	path = Terradue.ElasticCas.EarthObservation
-	url = git@github.com:Terradue/ElasticCas.EO.git

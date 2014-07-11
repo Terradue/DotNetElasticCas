@@ -5,6 +5,7 @@ using ServiceStack.ServiceHost;
 using PlainElastic.Net;
 using log4net;
 using PlainElastic.Net.Serialization;
+using Terradue.ElasticCas.Controller;
 
 namespace Terradue.ElasticCas.Service {
     public class BaseService : ServiceStack.ServiceInterface.Service {

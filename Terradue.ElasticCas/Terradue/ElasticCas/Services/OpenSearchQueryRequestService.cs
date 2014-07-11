@@ -31,17 +31,7 @@ namespace Terradue.ElasticCas.Service {
             collection.IndexName = request.IndexName;
             collection.ProxyOpenSearchDescription = ecf.GetOpenSearchDescription(collection);
 
-            OpenSearchEngine ose = new OpenSearchEngine();
-            ose.LoadPlugins();
-
-            Type type = OpenSearchFactory.ResolveTypeFromRequest(HttpContext.Current.Request, ose);
-
-            var result = ose.Query(collection, Request.QueryString, type );
-
-            OpenSearchFactory.ReplaceSelfLinks(result, collection.EntrySelfLinkTemplate);   
-            OpenSearchFactory.ReplaceOpenSearchDescriptionLinks(result);   
-
-            return new HttpResult(result.Result.SerializeToString(), result.Result.ContentType);
+            return OpenSearchService.Query(collection, Request.QueryString);
         }
     }
 }

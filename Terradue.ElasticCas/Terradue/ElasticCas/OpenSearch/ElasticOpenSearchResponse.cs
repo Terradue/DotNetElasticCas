@@ -3,6 +3,7 @@ using Terradue.OpenSearch.Response;
 using PlainElastic.Net;
 using PlainElastic.Net.Serialization;
 using System.IO;
+using Terradue.ElasticCas.Controller;
 
 namespace Terradue.ElasticCas {
     public class ElasticOpenSearchResponse : OpenSearchResponse {
@@ -16,7 +17,7 @@ namespace Terradue.ElasticCas {
         #region implemented abstract members of OpenSearchResponse
 
         public override System.IO.Stream GetResponseStream() {
-            JsonNetSerializer ser= new JsonNetSerializer();
+            ServiceStackJsonSerializer ser= new ServiceStackJsonSerializer();
 
             var results = ser.ToSearchResult<string>(result);
 
@@ -50,7 +51,7 @@ namespace Terradue.ElasticCas {
 
         public override TimeSpan RequestTime {
             get {
-                JsonNetSerializer ser = new JsonNetSerializer();
+                ServiceStackJsonSerializer ser = new ServiceStackJsonSerializer();
 
                 var results = ser.ToSearchResult<object>(result);
 

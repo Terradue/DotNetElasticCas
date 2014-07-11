@@ -3,15 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.ElasticCas", "Terradue.ElasticCas\Terradue.ElasticCas.csproj", "{3ED47B7C-208B-4C14-A3FD-3CB92FF84A93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.ElasticCas.EarthObservation", "Terradue.ElasticCas.EarthObservation\Terradue.ElasticCas.EarthObservation\Terradue.ElasticCas.EarthObservation.csproj", "{C96EAF83-ADE1-4B0D-B660-9F53177B6250}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.Metadata.EarthObservation", "Terradue.Metadata.EarthObservation\Terradue.Metadata.EarthObservation\Terradue.Metadata.EarthObservation.csproj", "{E084B86A-8B40-414E-95FA-760F3C6BFDCB}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.OpenSearch", "Terradue.OpenSearch\Terradue.OpenSearch\Terradue.OpenSearch.csproj", "{997A44FD-EE4A-490A-855B-88305E0CD269}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.OpenSearch.GeoJson", "Terradue.OpenSearch.GeoJson\Terradue.OpenSearch.GeoJson\Terradue.OpenSearch.GeoJson.csproj", "{B932B7CD-4DDA-4084-AFBC-0FFCF4310C2E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.OpenSearch.Kml", "Terradue.OpenSearch.Kml\Terradue.OpenSearch.Kml\Terradue.OpenSearch.Kml.csproj", "{F76F0148-0095-47F6-81E6-AEFC4C49DF11}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,18 +25,6 @@ Global
 		{B932B7CD-4DDA-4084-AFBC-0FFCF4310C2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B932B7CD-4DDA-4084-AFBC-0FFCF4310C2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B932B7CD-4DDA-4084-AFBC-0FFCF4310C2E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C96EAF83-ADE1-4B0D-B660-9F53177B6250}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C96EAF83-ADE1-4B0D-B660-9F53177B6250}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C96EAF83-ADE1-4B0D-B660-9F53177B6250}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C96EAF83-ADE1-4B0D-B660-9F53177B6250}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E084B86A-8B40-414E-95FA-760F3C6BFDCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E084B86A-8B40-414E-95FA-760F3C6BFDCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E084B86A-8B40-414E-95FA-760F3C6BFDCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E084B86A-8B40-414E-95FA-760F3C6BFDCB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F76F0148-0095-47F6-81E6-AEFC4C49DF11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F76F0148-0095-47F6-81E6-AEFC4C49DF11}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F76F0148-0095-47F6-81E6-AEFC4C49DF11}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F76F0148-0095-47F6-81E6-AEFC4C49DF11}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Terradue.ElasticCas\Terradue.ElasticCas.csproj
