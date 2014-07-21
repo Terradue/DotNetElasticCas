@@ -123,7 +123,7 @@ namespace Terradue.ElasticCas.Service {
             string newRoute = string.Format("/api/{0}/{1}/{2}", indexName, route.Id, route.RouteFromIndex);
             //AppHost.Instance.Routes.Add<DynamicRouteRequest>(newRoute);
             AppHost.Instance.Dispose();
-            AppHost.Clear();
+            //AppHost.Clear();
             //new AppHost().Init();
         }
 
