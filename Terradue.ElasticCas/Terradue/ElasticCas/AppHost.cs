@@ -21,6 +21,7 @@ using Mono.Addins;
 using Terradue.OpenSearch.Result;
 using Terradue.ElasticCas.Model;
 using Terradue.ElasticCas.Service;
+using Terradue.ElasticCas.Routes;
 
 namespace Terradue.ElasticCas {
     public class AppHost : AppHostBase {
@@ -46,7 +47,7 @@ namespace Terradue.ElasticCas {
 				System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration(null);
 
             JsConfig.ExcludeTypeInfo = true;
-            JsConfig.ConvertObjectTypesIntoStringDictionary = true;
+            //JsConfig.ConvertObjectTypesIntoStringDictionary = true;
             JsConfig.ThrowOnDeserializationError = true;
             JsConfig.IncludePublicFields = true;
             JsConfig.EmitCamelCaseNames = true;
@@ -74,6 +75,8 @@ namespace Terradue.ElasticCas {
 
 
             });
+
+            Plugins.Add(new DynamicOpenSearchRouteModule());
 
             this.ServiceExceptionHandler = (httpReq, request, ex) => {
                 if (EndpointHost.Config != null && EndpointHost.Config.ReturnsInnerException && ex.InnerException != null && !(ex is IHttpError)) {
