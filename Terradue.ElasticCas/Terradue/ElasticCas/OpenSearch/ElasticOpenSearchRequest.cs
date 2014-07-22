@@ -9,6 +9,7 @@ using System.IO;
 using System.Web;
 using PlainElastic.Net.Serialization;
 using Terradue.ElasticCas.Controller;
+using Terradue.OpenSearch.Engine;
 
 namespace Terradue.ElasticCas {
     public class ElasticOpenSearchRequest : OpenSearchRequest {
@@ -54,6 +55,12 @@ namespace Terradue.ElasticCas {
             ElasticOpenSearchRequest eosRequest = new ElasticOpenSearchRequest(ecf.EsConnection, collection.IndexName, collection.TypeName, parameters);
 
             var query = collection.BuildQuery(parameters);
+
+            if (parameters["count"] != null) {
+                query.Size(int.Parse(parameters["count"]));
+            } else {
+                query.Size(OpenSearchEngine.DEFAULT_COUNT);
+            }
 
             eosRequest.QueryJson = query.Build();
 

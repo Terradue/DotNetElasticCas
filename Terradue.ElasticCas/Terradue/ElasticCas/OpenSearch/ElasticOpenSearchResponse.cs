@@ -61,6 +61,16 @@ namespace Terradue.ElasticCas {
 
         #endregion
 
+        public int TotalResult {
+            get {
+                ServiceStackJsonSerializer ser = new ServiceStackJsonSerializer();
+
+                var results = ser.ToSearchResult<object>(result);
+
+                return results.hits.total;
+            }
+        }
+
         public OperationResult GetOperationResult()
         {
             return result;

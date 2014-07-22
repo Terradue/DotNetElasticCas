@@ -72,6 +72,9 @@ namespace Terradue.ElasticCas.Service {
                 MemoryOpenSearchResponse payload = new MemoryOpenSearchResponse(Request.InputStream, Request.ContentType);
 
                 IOpenSearchResultCollection results = osee.ReadNative(payload);
+                OpenSearchFactory.RemoveLinksByRel(ref results,"alternate");
+                OpenSearchFactory.RemoveLinksByRel(ref results,"self");
+                OpenSearchFactory.RemoveLinksByRel(ref results,"search");
 
                 Collection<IElasticDocument> docs = documents.CreateFromOpenSearchResultCollection(results);
 
@@ -109,10 +112,10 @@ namespace Terradue.ElasticCas.Service {
                 throw new InvalidTypeModelException(request.TypeName, string.Format("Type '{0}' is not found in the type extensions. Check that plugins are loaded", request.TypeName));
 
             IOpenSearchResult osres = ose.Query(entity, new NameValueCollection());
-            OpenSearchFactory.RemoveLinksByRel(osres, "alternate");
-            OpenSearchFactory.RemoveLinksByRel(osres, "via");
-            OpenSearchFactory.RemoveLinksByRel(osres, "self");
-            OpenSearchFactory.RemoveLinksByRel(osres, "search");
+            OpenSearchFactory.RemoveLinksByRel(ref osres, "alternate");
+            OpenSearchFactory.RemoveLinksByRel(ref osres, "via");
+            OpenSearchFactory.RemoveLinksByRel(ref osres, "self");
+            OpenSearchFactory.RemoveLinksByRel(ref osres, "search");
 
             Collection<IElasticDocument> documents = collection.CreateFromOpenSearchResultCollection(osres.Result);
 
