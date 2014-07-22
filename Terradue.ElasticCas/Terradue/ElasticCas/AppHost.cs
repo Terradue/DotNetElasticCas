@@ -47,7 +47,7 @@ namespace Terradue.ElasticCas {
 				System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration(null);
 
             JsConfig.ExcludeTypeInfo = true;
-            //JsConfig.ConvertObjectTypesIntoStringDictionary = true;
+            JsConfig.ConvertObjectTypesIntoStringDictionary = true;
             JsConfig.ThrowOnDeserializationError = true;
             JsConfig.IncludePublicFields = true;
             JsConfig.EmitCamelCaseNames = true;

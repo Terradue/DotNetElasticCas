@@ -170,7 +170,9 @@ namespace Terradue.ElasticCas.Service {
                 throw e;
             }
 
-            Dictionary<string, object> aliases = response.Result.FromJson<Dictionary<string, object>>();
+            ServiceStackJsonSerializer ser = new ServiceStackJsonSerializer();
+
+            var aliases = ser.Deserialize<JsonObject>(response.Result);
 
             foreach (var indexName in aliases.Keys) {
 
@@ -178,7 +180,6 @@ namespace Terradue.ElasticCas.Service {
 
                 try {
                     OperationResult result = esConnection.Get(command);
-                    ServiceStackJsonSerializer ser = new ServiceStackJsonSerializer();
                     var results = ser.ToSearchResult<DynamicOpenSearchRoute>(result);
                     if (results.hits.total > 0) {
                         results.Documents.FirstOrDefault(r => {
