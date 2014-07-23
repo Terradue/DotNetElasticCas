@@ -22,26 +22,33 @@ using Terradue.OpenSearch.Result;
 using Terradue.ElasticCas.Model;
 using Terradue.ElasticCas.Service;
 using Terradue.ElasticCas.Routes;
+using log4net;
 
 namespace Terradue.ElasticCas {
     public class AppHost : AppHostBase {
+
         public System.Configuration.Configuration WebConfig;
+        public readonly ILog Logger; 
 
         public static OpenSearchEngine OpenSearchEngine { get; private set; }
         //Tell Service Stack the name of your application and where to find your web services
         public AppHost() : base("Elastic Catalogue", typeof(OpenSearchDescriptionService).Assembly) {
 
+            log4net.Config.XmlConfigurator.Configure(new FileInfo("log4net.config"));
+
             // Initialize the add-in engine
             AddinManager.Initialize();
             AddinManager.Registry.Update(null);
-        
 
             LoadStaticObject();
 
+            Logger = LogManager.GetLogger("AppHost");
 
         }
 
         public override void Configure(Funq.Container container) {
+
+            Logger.Info("Reading global configuration");
             //register any dependencies your services use, e.g:
             //container.Register<ICacheClient>(new MemoryCacheClient());
             WebConfig =
@@ -54,7 +61,7 @@ namespace Terradue.ElasticCas {
             JsConfig.EmitCamelCaseNames = true;
             //JsConfig.IncludeTypeInfo = true;
 
-            //Permit modern browsers (e.g. Firefox) to allow sending of any REST HTTP Method
+            Logger.Info("Configure ServiceStack EndpointHostConfig");
             base.SetConfig(new EndpointHostConfig {
                 GlobalResponseHeaders = {
                     { "Access-Control-Allow-Origin", "*" },
@@ -72,13 +79,12 @@ namespace Terradue.ElasticCas {
                 MapExceptionToStatusCode = {
                     { typeof(NotFoundException), 404 },
                 }
-
-
-
             });
 
+            Logger.Info("Load Plugins");
             LoadPlugins();
 
+            Logger.Info("Configure Service Exception Handler");
             this.ServiceExceptionHandler = (httpReq, request, ex) => {
                 if (EndpointHost.Config != null && EndpointHost.Config.ReturnsInnerException && ex.InnerException != null && !(ex is IHttpError)) {
                     ex = ex.InnerException;
@@ -96,10 +102,9 @@ namespace Terradue.ElasticCas {
                 return DtoUtils.CreateErrorResponse(request, ex, responseStatus);
             };
 
+            Logger.Info("Register ContentType Filters");
             this.ContentTypeFilters.Register("application/opensearchdescription+xml", OpenSearchDescriptionService.OpenSearchDescriptionSerializer, OpenSearchDescriptionService.OpenSearchDescriptionDeserializer);
            
-            log4net.Config.DOMConfigurator.Configure();
-
         }
 
         public void SerializeToStream(IRequestContext requestContext, object request, Stream stream) {
@@ -116,10 +121,13 @@ namespace Terradue.ElasticCas {
         }
 
         void LoadPlugins() {
+
+            Logger.Info("Load DynamicOpenSearchRouteModule");
             Plugins.Add(new DynamicOpenSearchRouteModule());
 
             foreach (TypeExtensionNode node in AddinManager.GetExtensionNodes (typeof(Terradue.ElasticCas.Plugins.IPlugin))) {
                 IPlugin plugin = (IPlugin)node.CreateInstance();
+                Logger.Info("Load " + node.Id);
                 Plugins.Add(plugin);
             }
 

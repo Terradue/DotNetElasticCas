@@ -30,12 +30,12 @@ namespace Terradue.ElasticCas {
 
         public System.Configuration.KeyValueConfigurationElement EsPort { get; set; }
 
-        protected readonly ILog logger;
+        public readonly ILog Logger;
 
         internal ElasticCasFactory(string name) {
 
             // Init Log
-            logger = LogManager.GetLogger(name);
+            Logger = LogManager.GetLogger(name);
 
             // Get web config
             RootWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration(null);
@@ -43,15 +43,15 @@ namespace Terradue.ElasticCas {
                 EsHost = RootWebConfig.AppSettings.Settings["esHost"];
                 EsPort = RootWebConfig.AppSettings.Settings["esPort"];
                 if (EsHost != null)
-                    logger.InfoFormat("Using ElasticSearch Host : {0}", EsHost);
+                    Logger.InfoFormat("Using ElasticSearch Host : {0}", EsHost);
                 else {
                     EsPort.Value = "localhost";
-                    logger.InfoFormat("No ElasticSearch Host specified, using default : {0}", EsHost);
+                    Logger.InfoFormat("No ElasticSearch Host specified, using default : {0}", EsHost);
                 }
             }
 
             esConnection = new ElasticConnection(EsHost.Value, int.Parse(EsPort.Value));
-            logger.InfoFormat("New ElasticSearch Connection from {0}", name);
+            Logger.InfoFormat("New ElasticSearch Connection from {0}", name);
         }
 
         public ElasticConnection EsConnection {
