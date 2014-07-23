@@ -6,7 +6,7 @@ using PlainElastic.Net;
 
 namespace Terradue.ElasticCas.Request {
 
-	[Route("/catalogue/{IndexName}", "GET")]
+	    
 	public class GetIndexRequest {
 
 		public string IndexName { get; set; }

@@ -36,6 +36,10 @@ namespace Terradue.ElasticCas.Routes {
         [ApiMember(Name="routeParameters")]
         public virtual Dictionary<string, RouteParameter> RouteParameters { get; set; }
 
+        [DataMember(Name="queryStringParameters")]
+        [ApiMember(Name="queryStringParameters")]
+        public virtual Dictionary<string, string> QueryStringParameters { get; set; }
+
 
     }
 

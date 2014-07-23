@@ -38,6 +38,7 @@ namespace Terradue.ElasticCas {
 
             LoadStaticObject();
 
+
         }
 
         public override void Configure(Funq.Container container) {
@@ -76,7 +77,7 @@ namespace Terradue.ElasticCas {
 
             });
 
-            Plugins.Add(new DynamicOpenSearchRouteModule());
+            LoadPlugins();
 
             this.ServiceExceptionHandler = (httpReq, request, ex) => {
                 if (EndpointHost.Config != null && EndpointHost.Config.ReturnsInnerException && ex.InnerException != null && !(ex is IHttpError)) {
@@ -96,8 +97,7 @@ namespace Terradue.ElasticCas {
             };
 
             this.ContentTypeFilters.Register("application/opensearchdescription+xml", OpenSearchDescriptionService.OpenSearchDescriptionSerializer, OpenSearchDescriptionService.OpenSearchDescriptionDeserializer);
-            //this.ContentTypeFilters.Register("application/opensearchdescription+xml", SerializeToStream, ServiceStack.Text.XmlSerializer.DeserializeFromStream);
-
+           
             log4net.Config.DOMConfigurator.Configure();
 
         }
@@ -112,6 +112,16 @@ namespace Terradue.ElasticCas {
             OpenSearchEngine.LoadPlugins();
 
             ElasticCasFactory.LoadPlugins(this);
+
+        }
+
+        void LoadPlugins() {
+            Plugins.Add(new DynamicOpenSearchRouteModule());
+
+            foreach (TypeExtensionNode node in AddinManager.GetExtensionNodes (typeof(Terradue.ElasticCas.Plugins.IPlugin))) {
+                IPlugin plugin = (IPlugin)node.CreateInstance();
+                Plugins.Add(plugin);
+            }
 
         }
     }

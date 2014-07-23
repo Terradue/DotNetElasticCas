@@ -106,7 +106,7 @@ namespace Terradue.ElasticCas.Service {
             if (osParameters.AllKeys.Contains("enctype"))
                 mimeTypes.Add(osParameters["enctype"]);
 
-            collection.ProxyOpenSearchDescription = ecf.GetOpenSearchDescription(collection);
+            collection.ProxyOpenSearchDescription = ecf.GetDefaultOpenSearchDescription(collection);
             OpenSearchDescription osd = collection.GetProxyOpenSearchDescription();
 
             OpenSearchDescriptionUrl osdUrl = OpenSearchFactory.GetOpenSearchUrlByTypeAndMaxParam(osd, mimeTypes, osParameters);

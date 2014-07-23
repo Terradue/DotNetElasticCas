@@ -22,13 +22,13 @@ using System.Collections.Specialized;
 namespace Terradue.ElasticCas.Service {
 
 	[Api("OpenSearch Description Service")]
-	[Restrict(EndpointAttributes.InSecure | EndpointAttributes.InternalNetworkAccess | EndpointAttributes.Xml,
-	          EndpointAttributes.Secure | EndpointAttributes.External | EndpointAttributes.Xml)]
+    [Restrict(EndpointAttributes.InSecure | EndpointAttributes.InternalNetworkAccess,
+	          EndpointAttributes.Secure | EndpointAttributes.External)]
     public class OpenSearchDescriptionService : BaseService {
 
         public OpenSearchDescriptionService () : base ("OpenSearch Description Service"){}
 
-		[AddHeader(ContentType = ContentType.Xml)]
+        [AddHeader(ContentType = "application/opensearchdescription+xml")]
 		public object Get(OpenSearchDescriptionGetRequest request)
 		{
             IElasticDocumentCollection collection = ElasticCasFactory.GetElasticDocumentCollectionByTypeName(request.TypeName);
@@ -38,7 +38,7 @@ namespace Terradue.ElasticCas.Service {
 
             collection.IndexName = request.IndexName;
 
-            OpenSearchDescription osd = ecf.GetOpenSearchDescription(collection);
+            OpenSearchDescription osd = ecf.GetDefaultOpenSearchDescription(collection);
 
             return new HttpResult(osd, "application/opensearchdescription+xml");
 

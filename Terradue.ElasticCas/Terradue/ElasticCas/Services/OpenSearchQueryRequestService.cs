@@ -9,6 +9,7 @@ using PlainElastic.Net.Queries;
 using Terradue.OpenSearch.Engine;
 using Terradue.OpenSearch;
 using System.Web;
+using System.Collections.Specialized;
 
 namespace Terradue.ElasticCas.Service {
 
@@ -29,9 +30,16 @@ namespace Terradue.ElasticCas.Service {
             }
 
             collection.IndexName = request.IndexName;
-            collection.ProxyOpenSearchDescription = ecf.GetOpenSearchDescription(collection);
+            collection.ProxyOpenSearchDescription = ecf.GetDefaultOpenSearchDescription(collection);
 
-            return OpenSearchService.Query(collection, Request.QueryString);
+            NameValueCollection parameters = new NameValueCollection(Request.QueryString);
+            if (request.AdditionalParameters != null) {
+                foreach (var key in request.AdditionalParameters.AllKeys) {
+                    parameters.Set(key, request.AdditionalParameters[key]);
+                }
+            }
+
+            return OpenSearchService.Query(collection, parameters);
         }
     }
 }

@@ -24,11 +24,11 @@ namespace Terradue.ElasticCas {
     public class ElasticCasFactory {
         ElasticConnection esConnection;
 
-        internal System.Configuration.Configuration RootWebConfig { get; set; }
+        public System.Configuration.Configuration RootWebConfig { get; set; }
 
-        internal System.Configuration.KeyValueConfigurationElement EsHost { get; set; }
+        public System.Configuration.KeyValueConfigurationElement EsHost { get; set; }
 
-        internal System.Configuration.KeyValueConfigurationElement EsPort { get; set; }
+        public System.Configuration.KeyValueConfigurationElement EsPort { get; set; }
 
         protected readonly ILog logger;
 
@@ -155,7 +155,7 @@ namespace Terradue.ElasticCas {
             return null;
         }
 
-        public OpenSearchDescription GetOpenSearchDescription (IElasticDocumentCollection collection){
+        public OpenSearchDescription GetDefaultOpenSearchDescription (IElasticDocumentCollection collection){
 
             OpenSearchDescription osd = new OpenSearchDescription();
 

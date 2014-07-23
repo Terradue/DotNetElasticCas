@@ -16,11 +16,16 @@ namespace Terradue.ElasticCas.Service {
             OpenSearchEngine ose = new OpenSearchEngine();
             ose.LoadPlugins();
 
+            // special case for description
+            if (HttpContext.Current.Request.AcceptTypes[0] == "application/opensearchdescription+xml" || parameters["format"] == "description") {
+                return new HttpResult(collection.GetProxyOpenSearchDescription(), "application/opensearchdescription+xml");
+            }
+
             Type type = OpenSearchFactory.ResolveTypeFromRequest(HttpContext.Current.Request, ose);
 
             var result = ose.Query(collection, parameters, type );
 
-            OpenSearchFactory.ReplaceSelfLinks(result, collection.EntrySelfLinkTemplate);   
+            OpenSearchFactory.ReplaceSelfLinks(result, collection.EntrySelfLinkTemplate, result.Result.ContentType);   
             OpenSearchFactory.ReplaceOpenSearchDescriptionLinks(result);   
 
             return new HttpResult(result.Result.SerializeToString(), result.Result.ContentType);
