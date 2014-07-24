@@ -17,7 +17,7 @@ namespace Terradue.ElasticCas.Service {
             ose.LoadPlugins();
 
             // special case for description
-            if (HttpContext.Current.Request.AcceptTypes[0] == "application/opensearchdescription+xml" || parameters["format"] == "description") {
+            if (HttpContext.Current.Request.AcceptTypes != null && HttpContext.Current.Request.AcceptTypes[0] == "application/opensearchdescription+xml" || parameters["format"] == "description") {
                 return new HttpResult(collection.GetProxyOpenSearchDescription(), "application/opensearchdescription+xml");
             }
 
