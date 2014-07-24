@@ -200,6 +200,10 @@ namespace Terradue.ElasticCas {
                                                       "search"));
 
             }
+            searchUrl = new UriBuilder(string.Format("{0}/catalogue/{1}/{2}/search", RootWebConfig.AppSettings.Settings["baseUrl"].Value, collection.IndexName, collection.TypeName));
+            urls.Add(new OpenSearchDescriptionUrl("application/opensearchdescription+xml", 
+                                                  searchUrl.ToString(),
+                                                  "self"));
             osd.Url = urls.ToArray();
 
             return osd;
