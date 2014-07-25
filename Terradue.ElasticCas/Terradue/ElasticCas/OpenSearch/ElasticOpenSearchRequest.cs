@@ -56,7 +56,7 @@ namespace Terradue.ElasticCas {
 
             var query = collection.BuildQuery(parameters);
 
-            if (parameters["count"] != null) {
+            if (!string.IsNullOrEmpty(parameters["count"])) {
                 query.Size(int.Parse(parameters["count"]));
             } else {
                 query.Size(OpenSearchEngine.DEFAULT_COUNT);
