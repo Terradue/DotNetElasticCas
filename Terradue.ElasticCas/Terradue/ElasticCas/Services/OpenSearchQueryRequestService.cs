@@ -10,6 +10,9 @@ using Terradue.OpenSearch.Engine;
 using Terradue.OpenSearch;
 using System.Web;
 using System.Collections.Specialized;
+using System.IO;
+using Terradue.ServiceModel.Syndication;
+using System.Xml;
 
 namespace Terradue.ElasticCas.Service {
 
@@ -18,7 +21,7 @@ namespace Terradue.ElasticCas.Service {
               EndpointAttributes.Secure | EndpointAttributes.External | EndpointAttributes.Json)]
     public class OpenSearchQueryRequestService : BaseService {
 
-        public OpenSearchQueryRequestService() : base("OpenSearch Query Service"){
+        public OpenSearchQueryRequestService() : base("OpenSearch Query Service") {
         }
 
         public object Get(OpenSearchQueryRequest request) {
@@ -40,6 +43,38 @@ namespace Terradue.ElasticCas.Service {
             }
 
             return OpenSearchService.Query(collection, parameters);
+        }
+
+
+
+        public static void SerializeToStream(IRequestContext requestContext, 
+                                             object response, Stream stream) {
+            if (!(response is SyndicationFeed))
+                ServiceStack.Text.XmlSerializer.SerializeToStream(response, stream);
+
+            var sw = XmlWriter.Create(stream);
+            Atom10FeedFormatter atomFormatter = new Atom10FeedFormatter((SyndicationFeed)response);
+            atomFormatter.WriteTo(sw);
+            sw.Flush();
+            sw.Close();
+        }
+
+        public static object DeserializeFromStream(Type type, Stream stream) {
+            if (type == typeof(SyndicationFeed)) {
+                var sw = XmlReader.Create(stream);
+                Atom10FeedFormatter atomFormatter = new Atom10FeedFormatter();
+                atomFormatter.ReadFrom(sw);
+                sw.Close();
+                return atomFormatter.Feed;
+            } else {
+                try {
+                    return ServiceStack.Text.XmlSerializer.DeserializeFromStream(type, stream);
+                }
+                catch (Exception e){
+                    stream.Seek(0, SeekOrigin.Begin);
+                    return Activator.CreateInstance(type);
+                }
+            }
         }
     }
 }

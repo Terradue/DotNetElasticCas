@@ -23,6 +23,7 @@ using Terradue.ElasticCas.Model;
 using Terradue.ElasticCas.Service;
 using Terradue.ElasticCas.Routes;
 using log4net;
+using Terradue.ServiceModel.Syndication;
 
 namespace Terradue.ElasticCas {
     public class AppHost : AppHostBase {
@@ -73,9 +74,8 @@ namespace Terradue.ElasticCas {
                 EnableAccessRestrictions = true,
                 DebugMode = true, //Enable StackTraces in development
                 WebHostUrl = WebConfig.AppSettings.Settings["baseUrl"].Value,
-                WriteErrorsToResponse = false, //custom exception handling
+                WriteErrorsToResponse = true,
                 DefaultContentType = ServiceStack.Common.Web.ContentType.Json,
-                ReturnsInnerException = false,
                 MapExceptionToStatusCode = {
                     { typeof(NotFoundException), 404 },
                 }
@@ -104,7 +104,9 @@ namespace Terradue.ElasticCas {
 
             Logger.Info("Register ContentType Filters");
             this.ContentTypeFilters.Register("application/opensearchdescription+xml", OpenSearchDescriptionService.OpenSearchDescriptionSerializer, OpenSearchDescriptionService.OpenSearchDescriptionDeserializer);
-           
+            this.ContentTypeFilters.Register("application/atom+xml", OpenSearchQueryRequestService.SerializeToStream, OpenSearchQueryRequestService.DeserializeFromStream);
+
+
         }
 
         public void SerializeToStream(IRequestContext requestContext, object request, Stream stream) {
