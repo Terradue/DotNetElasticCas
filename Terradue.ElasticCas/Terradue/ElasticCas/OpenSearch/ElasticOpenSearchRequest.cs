@@ -62,6 +62,9 @@ namespace Terradue.ElasticCas {
                 query.Size(OpenSearchEngine.DEFAULT_COUNT);
             }
 
+            if (!string.IsNullOrEmpty(parameters["startIndex"])) {
+                query.From(int.Parse(parameters["startIndex"]) - 1);
+            }
             eosRequest.QueryJson = query.Build();
 
             return eosRequest;
