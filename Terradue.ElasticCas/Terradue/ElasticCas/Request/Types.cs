@@ -12,12 +12,13 @@ using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Support;
 using Terradue.ElasticCas.Service;
 using System.Collections.Specialized;
+using System.IO;
 
 namespace Terradue.ElasticCas.Request {
 
 
     [Route("/catalogue/{IndexName}/{TypeName}", "POST")]
-    public class SingleIngestionRequest : IReturn<IElasticDocument> {
+    public class IngestionRequest : IReturn<IElasticDocument> {
         public string IndexName { get; set; }
 
         public string TypeName { get; set; }

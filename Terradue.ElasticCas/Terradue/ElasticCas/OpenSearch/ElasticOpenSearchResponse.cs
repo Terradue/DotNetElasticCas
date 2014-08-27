@@ -25,7 +25,8 @@ namespace Terradue.ElasticCas {
 
             StreamWriter sw = new StreamWriter(ms);
 
-            sw.Write("{\"collection\":{\"features\":[");
+            /*sw.Write("{\"collection\":{\"features\":[");*/
+            sw.Write("{[");
             string sep = "";
 
             foreach ( string document in results.Documents ){
@@ -33,7 +34,8 @@ namespace Terradue.ElasticCas {
                 sep = ",";
             }
 
-            sw.Write("],\"type\":\"FeatureCollection\"}");
+            //sw.Write("],\"type\":\"FeatureCollection\"}");
+            sw.Write("]}");
 
             sw.Flush();
             sw.Close();

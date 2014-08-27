@@ -3,6 +3,7 @@ using ServiceStack.ServiceHost;
 using PlainElastic.Net.IndexSettings;
 using PlainElastic.Net.Serialization;
 using PlainElastic.Net;
+using Terradue.ElasticCas.Model;
 
 namespace Terradue.ElasticCas.Request {
 
@@ -14,14 +15,9 @@ namespace Terradue.ElasticCas.Request {
     }
 
 	[Route("/catalogue/{IndexName}", "PUT")]
-    public class CreateIndexRequest : IReturn<OperationResult>{
+    public class CreateIndexRequest : Index, IReturn<OperationResult>{
 
-		public string IndexName { get; set; }
-
-        public string[] TypeNames {
-            get;
-            set;
-        }
+		
 	}
 
     [Route("/catalogue/{IndexName}", "DELETE")]

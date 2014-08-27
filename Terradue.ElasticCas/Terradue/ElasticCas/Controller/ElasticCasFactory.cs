@@ -60,20 +60,20 @@ namespace Terradue.ElasticCas {
             }
         }
 
-        internal OperationResult CreateCatalogueIndex(string indexName, string[] typeNames, bool destroy = false) {
+        internal OperationResult CreateCatalogueIndex(CreateIndexRequest createRequest, bool destroy = false) {
 
-            if (IsIndexExists(indexName, esConnection)) {
+            if (IsIndexExists(createRequest.IndexName, esConnection)) {
 
                 if (destroy) {
-                    esConnection.Delete(Commands.Delete(indexName));
+                    esConnection.Delete(Commands.Delete(createRequest.IndexName));
                 } else {
-                    throw new InvalidOperationException(string.Format("'{0}' index already exists and cannot be overriden without data loss", indexName));
+                    throw new InvalidOperationException(string.Format("'{0}' index already exists and cannot be overriden without data loss", createRequest.IndexName));
                 }
             }
 
             string result;
 
-            string command = Commands.CreateIndex(indexName);
+            string command = Commands.CreateIndex(createRequest.IndexName);
 
             string jsondata = new IndexSettingsBuilder().Analysis(a => a.Analyzer(an => an.Custom("default", custom => custom
                                                                                                   .Tokenizer(DefaultTokenizers.standard)
@@ -87,23 +87,27 @@ namespace Terradue.ElasticCas {
             // Init mapp    ings for each types declared
 
             // If no types is declared
-            if (typeNames == null || typeNames.Length == 0) {
+
+            if (createRequest.TypeNames == null || createRequest.TypeNames.Length == 0) {
+                List<string> typeNames = new List<string>();
                 foreach (TypeExtensionNode node in AddinManager.GetExtensionNodes (typeof(IElasticDocument))) {
                     IElasticDocument doc = (IElasticDocument)node.CreateInstance();
-                    command = Commands.PutMapping(indexName, doc.TypeName);
+                    command = Commands.PutMapping(createRequest.IndexName, doc.TypeName);
                     jsondata = doc.GetMapping();
                     try {
                         result = esConnection.Put(command, jsondata);
                     } catch (Exception e) {
                         throw e;
                     }
+                    typeNames.Add(doc.TypeName);
                 }
+                createRequest.TypeNames = typeNames.ToArray();
             } else {
                 foreach (TypeExtensionNode node in AddinManager.GetExtensionNodes (typeof(IElasticDocument))) {
                     IElasticDocument doc = (IElasticDocument)node.CreateInstance();
-                    foreach (string type in typeNames) {
+                    foreach (string type in createRequest.TypeNames) {
                         if (type == doc.TypeName) {
-                            command = Commands.PutMapping(indexName, doc.TypeName);
+                            command = Commands.PutMapping(createRequest.IndexName, doc.TypeName);
                             jsondata = doc.GetMapping();
                             esConnection.Put(command, jsondata);
                         }
@@ -111,7 +115,7 @@ namespace Terradue.ElasticCas {
                 }
             }
 
-            return esConnection.Get(Commands.GetMapping(new string[]{ indexName }, typeNames));
+            return esConnection.Get(Commands.GetMapping(new string[]{ createRequest.IndexName }, createRequest.TypeNames));
 
         }
 
@@ -171,8 +175,7 @@ namespace Terradue.ElasticCas {
             osd.Description = string.Format("This Search Service performs queries in the index {0}. There are several URL templates that return the results in different formats." +
                                             "This search service is in accordance with the OGC 10-032r3 specification.", collection.IndexName);
 
-            OpenSearchEngine ose = new OpenSearchEngine();
-            ose.LoadPlugins();
+            OpenSearchEngine ose = collection.GetOpenSearchEngine(new NameValueCollection());
 
             var osee = ose.GetFirstExtensionByTypeAbility(collection.GetOpenSearchResultType());
             if (osee == null) {
@@ -200,7 +203,7 @@ namespace Terradue.ElasticCas {
                                                       "search"));
 
             }
-            searchUrl = new UriBuilder(string.Format("{0}/catalogue/{1}/{2}/search", RootWebConfig.AppSettings.Settings["baseUrl"].Value, collection.IndexName, collection.TypeName));
+            searchUrl = new UriBuilder(string.Format("{0}/catalogue/{1}/{2}/description", RootWebConfig.AppSettings.Settings["baseUrl"].Value, collection.IndexName, collection.TypeName));
             urls.Add(new OpenSearchDescriptionUrl("application/opensearchdescription+xml", 
                                                   searchUrl.ToString(),
                                                   "self"));

@@ -52,24 +52,24 @@ namespace Terradue.ElasticCas.Service {
         }
 
         [AddHeader(ContentType = ContentType.Json)]
-        public object Post(SingleIngestionRequest request) {
+        public object Post(IngestionRequest request) {
 
             string response = "";
 
             try {
-                OpenSearchEngine ose = new OpenSearchEngine();
-                ose.LoadPlugins();
-
-                IOpenSearchEngineExtension osee = ose.GetExtensionByContentTypeAbility(Request.ContentType);
-                if (osee == null)
-                    throw new NotImplementedException(string.Format("No OpenSearch extension found for reading {0}", Request.ContentType));
 
                 IElasticDocumentCollection documents = ElasticCasFactory.GetElasticDocumentCollectionByTypeName(request.TypeName);
 
                 if (documents == null)
                     throw new InvalidTypeModelException(request.TypeName, string.Format("Type '{0}' is not found in the type extensions. Check that plugins are loaded", request.TypeName));
 
-                MemoryOpenSearchResponse payload = new MemoryOpenSearchResponse(Request.InputStream, Request.ContentType);
+                OpenSearchEngine ose = documents.GetOpenSearchEngine(new NameValueCollection());
+
+                IOpenSearchEngineExtension osee = ose.GetExtensionByContentTypeAbility(Request.ContentType);
+                if (osee == null)
+                    throw new NotImplementedException(string.Format("No OpenSearch extension found for reading {0}", Request.ContentType));
+
+                MemoryOpenSearchResponse payload = new MemoryOpenSearchResponse(Request.GetRawBody(), Request.ContentType);
 
                 IOpenSearchResultCollection results = osee.ReadNative(payload);
                 OpenSearchFactory.RemoveLinksByRel(ref results,"alternate");
@@ -84,9 +84,6 @@ namespace Terradue.ElasticCas.Service {
                     new BulkBuilder(serializer)
                     .BuildCollection(docs,
                                      (builder, item) => builder.Index(data: item, id: item.Id.Replace('.', '_')));
-
-
-
 
                 response = esConnection.Post(command, bulkJson);
             } catch (Exception e) {

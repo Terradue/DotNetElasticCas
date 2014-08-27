@@ -60,6 +60,9 @@ namespace Terradue.ElasticCas {
             JsConfig.ThrowOnDeserializationError = true;
             JsConfig.IncludePublicFields = true;
             JsConfig.EmitCamelCaseNames = true;
+            JsConfig<DateTime>.SerializeFn = time => time.ToString("yyyy-MM-ddTHH:mm:ssZ");
+            JsConfig.AssumeUtc = true;
+
             //JsConfig.IncludeTypeInfo = true;
 
             Logger.Info("Configure ServiceStack EndpointHostConfig");
@@ -107,10 +110,11 @@ namespace Terradue.ElasticCas {
             this.ContentTypeFilters.Register("application/atom+xml", OpenSearchQueryRequestService.SerializeToStream, OpenSearchQueryRequestService.DeserializeFromStream);
 
 
-        }
+            this.PreRequestFilters.Insert(0, (httpReq, httpRes) => {
+                httpReq.UseBufferedStream = true;
+            });
 
-        public void SerializeToStream(IRequestContext requestContext, object request, Stream stream) {
-            XmlSerializer.SerializeToStream(request, stream);
+
         }
 
         private void LoadStaticObject() {
