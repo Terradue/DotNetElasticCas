@@ -26,8 +26,8 @@ namespace Terradue.ElasticCas.Service {
 
             var result = ose.Query(collection, parameters, type );
 
-            OpenSearchFactory.ReplaceSelfLinks(result, collection.EntrySelfLinkTemplate, result.Result.ContentType);   
-            OpenSearchFactory.ReplaceOpenSearchDescriptionLinks(result);
+            OpenSearchFactory.ReplaceSelfLinks(collection, parameters, result.Result, collection.EntrySelfLinkTemplate, result.Result.ContentType);   
+            OpenSearchFactory.ReplaceOpenSearchDescriptionLinks(collection, result.Result);
             OpenSearchFactory.ReplaceId(result);
 
             result.Result.Title = string.Format("Result for OpenSearch query over type {0} in index {1}", collection.TypeName, collection.IndexName);
