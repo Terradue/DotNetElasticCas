@@ -33,22 +33,20 @@ $ curl -XPOST 'http://localhost:8082/catalogue/twitter/tweet' -d '{
 All fields are indexed by default so that an OpenSearch Description is built dynamically anyhow.
 ```xml
 <OpenSearchDescriptionOpenSearchDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://a9.com/-/spec/opensearch/1.1/">
-<ShortName>twitter Elastic Catalogue</ShortName>
-<Description>
-This Search Service performs queries in the index twitter. There are several URL templates that return the results in different formats.This search service is in accordance with the OGC 10-032r3 specification.
-</Description>
-<Contact>info@terradue.com</Contact>
-<Url type="application/atom+xml" template="http://127.0.0.1:8081/catalogue/twitter/tweet/search?format=atom&count={count?}&startPage={startPage?}&startIndex={startIndex?}&q={searchTerms?}&lang={language?}" rel="results" pageOffset="1" indexOffset="1" />
-<Url type="application/json" template="http://127.0.0.1:8081/catalogue/twitter/tweet/search?format=json&count={count?}&startPage={startPage?}&startIndex={startIndex?}&q={searchTerms?}&lang={language?}" rel="results" pageOffset="1" indexOffset="1" />
-<Url type="application/opensearchdescription+xml" template="http://127.0.0.1:8081/catalogue/twitter/tweet/description" rel="self" pageOffset="1" indexOffset="1" />
-<Developer>Terradue GeoSpatial Development Team</Developer>
-<Attribution>Terradue</Attribution>
-<SyndicationRight>open</SyndicationRight>
-<AdultContent>false</AdultContent>
-<Language>en-us</Language>
-<OutputEncoding>UTF-8</OutputEncoding>
-<InputEncoding>UTF-8</InputEncoding>
-<DefaultUrl type="application/atom+xml" template="http://127.0.0.1:8081/catalogue/twitter/tweet/search?format=atom&count={count?}&startPage={startPage?}&startIndex={startIndex?}&q={searchTerms?}&lang={language?}" rel="results" pageOffset="1" indexOffset="1" />
+	<ShortName>twitter Elastic Catalogue</ShortName>
+	<Description>This Search Service performs queries in the index twitter. There are several URL templates that return the results in different formats.This search service is in accordance with the OGC 10-032r3 specification.</Description>
+	<Contact>info@terradue.com</Contact>
+	<Url type="application/atom+xml" template="http://127.0.0.1:8081/catalogue/twitter/tweet/search?format=atom&count={count?}&startPage={startPage?}&startIndex={startIndex?}&q={searchTerms?}&lang={language?}" rel="results" pageOffset="1" indexOffset="1" />
+	<Url type="application/json" template="http://127.0.0.1:8081/catalogue/twitter/tweet/search?format=json&count={count?}&startPage={startPage?}&startIndex={startIndex?}&q={searchTerms?}&lang={language?}" rel="results" pageOffset="1" indexOffset="1" />
+	<Url type="application/opensearchdescription+xml" template="http://127.0.0.1:8081/catalogue/twitter/tweet/description" rel="self" pageOffset="1" indexOffset="1" />
+	<Developer>Terradue GeoSpatial Development Team</Developer>
+	<Attribution>Terradue</Attribution>
+	<SyndicationRight>open</SyndicationRight>
+	<AdultContent>false</AdultContent>
+	<Language>en-us</Language>
+	<OutputEncoding>UTF-8</OutputEncoding>
+	<InputEncoding>UTF-8</InputEncoding>
+	<DefaultUrl type="application/atom+xml" template="http://127.0.0.1:8081/catalogue/twitter/tweet/search?format=atom&count={count?}&startPage={startPage?}&startIndex={startIndex?}&q={searchTerms?}&lang={language?}" rel="results" pageOffset="1" indexOffset="1" />
 </OpenSearchDescription>
 ```
 
