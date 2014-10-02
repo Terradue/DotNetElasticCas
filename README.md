@@ -12,12 +12,69 @@ Elasticsearch is a flexible and powerful open source, distributed, real-time sea
 
 ## How does it work ?
 
-ElasticCas put documents in elasticsearch that stores complex real world entities as structured JSON documents. All fields are indexed by default. ElasticCas builds simple or complex queries according to the OpenSearch parameters and the document type. Finally, it returns results in various formats.
+ElasticCas put documents collection in elasticsearch that stores complex real world entities as structured JSON documents.
+```js
+$ curl -XPOST 'http://localhost:8082/catalogue/twitter/tweet' -d '{
+    "items":[
+    	{
+		    "user" : "manu",
+    		"post_date" : "2014-09-24T15:10:12",
+	    	"message" : "trying out ElasticCas"
+        },
+        {
+		    "user" : "bob",
+    		"post_date" : "1973-05-24T12:45:33",
+	    	"message" : "Knockin' on Heaven's Door"
+        }
+    ]   
+}'
+```
+All fields are indexed by default so that an OpenSearch Description is built dynamically anyhow.
+```xml
+$ curl -XPOST 'http://localhost:8082/catalogue/twitter/tweet' -d '{
+    "items":[
+    	{
+		    "user" : "manu",
+    		"post_date" : "2014-09-24T15:10:12",
+	    	"message" : "trying out ElasticCas"
+        },
+        {
+		    "user" : "bob",
+    		"post_date" : "1973-05-24T12:45:33",
+	    	"message" : "Knockin' on Heaven's Door"
+        }
+    ]   
+}'
+```
+From OpenSearch query and its parameters, ElasticCas builds simple or complex queries according to the document type (plugins).
+```js
+$ curl -XPOST 'http://localhost:8082/catalogue/twitter/tweet' -d '{
+    "items":[
+    	{
+		    "user" : "manu",
+    		"post_date" : "2014-09-24T15:10:12",
+	    	"message" : "trying out ElasticCas"
+        },
+        {
+		    "user" : "bob",
+    		"post_date" : "1973-05-24T12:45:33",
+	    	"message" : "Knockin' on Heaven's Door"
+        }
+    ]   
+}'
+```
+Finally, it returns results in various formats (plugins).
 
-## Extensibility
+## Plugins and Extensibility
 
-ElasticCas is the chassis for building a domain specific complex distributed restful search and analytics system.
+ElasticCas is the chassis for building a domain specific complex distributed restful search and analytics system. Alone, it provides the full basic OpenSearch functionnalities such as the free text query powered with elasticsearch capabilities
+```
+http://localhost:8082/catalogue/tweeter/tweet/search?q=tag:wow
+```
+
 Pluging extensions into ElasticCas brings a new format, document type, or search functionnality.
+
+
 
 ## Getting started
 
