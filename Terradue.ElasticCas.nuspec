@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Terradue.ElasticCas</id>
+    <version>1.0.0-beta</version>
+    <title>Terradue.OpenSearch</title>
+    <authors>Terradue</authors>
+    <projectUrl>https://github.com/Terradue/DotNetElasticCas</projectUrl>
+    <licenseUrl>https://github.com/Terradue/DotNetElasticCas/blob/master/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Terradue.ElasticCas is a library targeting .NET 4.0 and above that provides an ElasticCas is an OpenSearch engine built over elasticsearch.</description>
+    <summary>OpenSearch engine for elasticsearch</summary>
+    <dependencies>
+      <dependency id="Terradue.ServiceModel.Syndication" version="[1.0.0,)" />
+      <dependency id="Terradue.OpenSearch" version="[1.7.0,1.8)" />
+      <dependency id="PlainElastic.Net" version="[1.0.48,)" />
+      <dependency id="log4net" version="[2.0.0,)" />
+      <dependency id="ServiceStack" version="[3.9.71,4)" />
+      <dependency id="ServiceStack.Common" version="[3.9.71,4)" />
+      <dependency id="ServiceStack.Text" version="[3.9.71,4)" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Terradue.ElasticCas/bin/Terradue.ElasticCas.dll" target="lib/net40/Terradue.ElasticCas.dll" />
+  </files>
+
+</package>
