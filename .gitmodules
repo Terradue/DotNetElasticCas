@@ -1,6 +1,3 @@
 [submodule "Terradue.OpenSearch"]
 	path = Terradue.OpenSearch
 	url = git@github.com:Terradue/DotNetOpenSearch.git
-[submodule "Terradue.OpenSearch.GeoJson"]
-	path = Terradue.OpenSearch.GeoJson
-	url = git@github.com:Terradue/DotNetOpenSearchGeoJson.git
