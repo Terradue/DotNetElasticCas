@@ -39,7 +39,7 @@ All fields are indexed by default so that an OpenSearch Description is built dyn
 	<Url type="application/atom+xml" template="http://127.0.0.1:8081/catalogue/twitter/tweet/search?format=atom&count={count?}&startPage={startPage?}&startIndex={startIndex?}&q={searchTerms?}&lang={language?}" rel="results" pageOffset="1" indexOffset="1" />
 	<Url type="application/json" template="http://127.0.0.1:8081/catalogue/twitter/tweet/search?format=json&count={count?}&startPage={startPage?}&startIndex={startIndex?}&q={searchTerms?}&lang={language?}" rel="results" pageOffset="1" indexOffset="1" />
 	<Url type="application/opensearchdescription+xml" template="http://127.0.0.1:8081/catalogue/twitter/tweet/description" rel="self" pageOffset="1" indexOffset="1" />
-	<Developer>Terradue GeoSpatial Development Team</Developer>
+	<Developer>Terradue Development Team</Developer>
 	<Attribution>Terradue</Attribution>
 	<SyndicationRight>open</SyndicationRight>
 	<AdultContent>false</AdultContent>
