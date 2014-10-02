@@ -18,8 +18,10 @@ using Terradue.OpenSearch.Engine;
 using System.Collections.Specialized;
 using System.Web;
 using System.Linq;
+using Terradue.ElasticCas.Exceptions;
+using System.Diagnostics;
 
-namespace Terradue.ElasticCas {
+namespace Terradue.ElasticCas.Controller {
 
     public class ElasticCasFactory {
         ElasticConnection esConnection;
@@ -163,7 +165,7 @@ namespace Terradue.ElasticCas {
 
             OpenSearchDescription osd = new OpenSearchDescription();
 
-            osd.ShortName = collection.TypeName + " Elastic Catalogue";
+            osd.ShortName = collection.IndexName + " Elastic Catalogue";
             osd.Attribution = "Terradue";
             osd.Contact = "info@terradue.com";
             osd.Developer = "Terradue GeoSpatial Development Team";
@@ -200,7 +202,7 @@ namespace Terradue.ElasticCas {
                 searchUrl.Query = queryString.ToString();
                 urls.Add(new OpenSearchDescriptionUrl(searchExtensions[code].DiscoveryContentType, 
                                                       searchUrl.ToString(),
-                                                      "search"));
+                                                      "results"));
 
             }
             searchUrl = new UriBuilder(string.Format("{0}/catalogue/{1}/{2}/description", RootWebConfig.AppSettings.Settings["baseUrl"].Value, collection.IndexName, collection.TypeName));

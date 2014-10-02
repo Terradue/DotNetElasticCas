@@ -2,7 +2,7 @@
 using Mono.Addins;
 
 
-namespace Terradue.ElasticCas.Plugins {
+namespace Terradue.ElasticCas.Model {
 
     [TypeExtensionPoint()]
     public interface IPlugin : ServiceStack.WebHost.Endpoints.IPlugin {

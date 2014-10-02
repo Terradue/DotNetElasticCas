@@ -4,7 +4,7 @@ using ServiceStack.Text;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
 using ServiceStack.WebHost.Endpoints;
-using Terradue.ElasticCas.Service;
+using Terradue.ElasticCas.Services;
 
 namespace Terradue.ElasticCas.Routes {
 

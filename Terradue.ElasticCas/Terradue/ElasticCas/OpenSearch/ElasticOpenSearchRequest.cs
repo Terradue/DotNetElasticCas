@@ -10,8 +10,9 @@ using System.Web;
 using PlainElastic.Net.Serialization;
 using Terradue.ElasticCas.Controller;
 using Terradue.OpenSearch.Engine;
+using System.Diagnostics;
 
-namespace Terradue.ElasticCas {
+namespace Terradue.ElasticCas.OpenSearch {
     public class ElasticOpenSearchRequest : OpenSearchRequest {
 
         string indexName;
@@ -65,6 +66,11 @@ namespace Terradue.ElasticCas {
             if (!string.IsNullOrEmpty(parameters["startIndex"])) {
                 query.From(int.Parse(parameters["startIndex"]) - 1);
             }
+
+            if (!string.IsNullOrEmpty(parameters["q"])) {
+                eosRequest.Parameters.Set("q", parameters["q"]);
+            }
+
             eosRequest.QueryJson = query.Build();
 
             return eosRequest;
@@ -95,6 +101,7 @@ namespace Terradue.ElasticCas {
         public override Terradue.OpenSearch.Response.OpenSearchResponse GetResponse() {
 
             var command = new SearchCommand(IndexName, TypeName);
+            command.Q(Parameters["q"]);
 
             OperationResult result = esConnection.Post(command, queryJson);
             return new ElasticOpenSearchResponse(result);

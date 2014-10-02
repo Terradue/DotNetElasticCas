@@ -18,8 +18,11 @@ using Terradue.OpenSearch.Schema;
 using Terradue.ElasticCas.Model;
 using Terradue.OpenSearch.Engine;
 using System.Collections.Specialized;
+using Terradue.ElasticCas.Controller;
+using Terradue.ElasticCas.Exceptions;
+using Terradue.ElasticCas.Types;
 
-namespace Terradue.ElasticCas.Service {
+namespace Terradue.ElasticCas.Services {
 
 	[Api("OpenSearch Description Service")]
     [Restrict(EndpointAttributes.InSecure | EndpointAttributes.InternalNetworkAccess,
@@ -32,8 +35,11 @@ namespace Terradue.ElasticCas.Service {
 		public object Get(OpenSearchDescriptionGetRequest request)
 		{
             IElasticDocumentCollection collection = ElasticCasFactory.GetElasticDocumentCollectionByTypeName(request.TypeName);
+
             if (collection == null) {
-                throw new InvalidTypeModelException(request.TypeName, string.Format("Type '{0}' is not found in the type extensions. Check that plugins are loaded", request.TypeName));
+                var gcollection = new GenericJsonCollection();
+                gcollection.TypeName = request.TypeName;
+                collection = gcollection;
             }
 
             collection.IndexName = request.IndexName;
@@ -43,8 +49,6 @@ namespace Terradue.ElasticCas.Service {
             return new HttpResult(osd, "application/opensearchdescription+xml");
 
 		}
-
-       
 
 		public static void OpenSearchDescriptionSerializer (IRequestContext reqCtx, object res, IHttpResponse stream)
 		{

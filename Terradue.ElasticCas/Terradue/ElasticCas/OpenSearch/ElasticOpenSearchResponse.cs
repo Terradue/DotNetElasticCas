@@ -5,7 +5,7 @@ using PlainElastic.Net.Serialization;
 using System.IO;
 using Terradue.ElasticCas.Controller;
 
-namespace Terradue.ElasticCas {
+namespace Terradue.ElasticCas.OpenSearch {
     public class ElasticOpenSearchResponse : OpenSearchResponse {
 
         OperationResult result;

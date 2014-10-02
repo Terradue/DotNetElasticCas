@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Terradue.ElasticCas {
+namespace Terradue.ElasticCas.Exceptions {
     public class InvalidTypeSearchException : Exception {
         string typeName;
 

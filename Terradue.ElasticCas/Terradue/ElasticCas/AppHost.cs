@@ -20,10 +20,12 @@ using Terradue.OpenSearch.Engine;
 using Mono.Addins;
 using Terradue.OpenSearch.Result;
 using Terradue.ElasticCas.Model;
-using Terradue.ElasticCas.Service;
+using Terradue.ElasticCas.Services;
 using Terradue.ElasticCas.Routes;
 using log4net;
 using Terradue.ServiceModel.Syndication;
+using Terradue.ElasticCas.Controller;
+using Terradue.ElasticCas.Types;
 
 namespace Terradue.ElasticCas {
     public class AppHost : AppHostBase {
@@ -62,6 +64,8 @@ namespace Terradue.ElasticCas {
             JsConfig.EmitCamelCaseNames = true;
             JsConfig<DateTime>.SerializeFn = time => time.ToString("yyyy-MM-ddTHH:mm:ssZ");
             JsConfig.AssumeUtc = true;
+            JsConfig<GenericJson>.RawSerializeFn = GenericJson.ToJson;
+            JsConfig<GenericJsonCollection>.RawSerializeFn = GenericJsonCollection.ToJson;
 
             //JsConfig.IncludeTypeInfo = true;
 
@@ -131,8 +135,8 @@ namespace Terradue.ElasticCas {
             Logger.Info("Load DynamicOpenSearchRouteModule");
             Plugins.Add(new DynamicOpenSearchRouteModule());
 
-            foreach (TypeExtensionNode node in AddinManager.GetExtensionNodes (typeof(Terradue.ElasticCas.Plugins.IPlugin))) {
-                IPlugin plugin = (IPlugin)node.CreateInstance();
+            foreach (TypeExtensionNode node in AddinManager.GetExtensionNodes (typeof(Terradue.ElasticCas.Model.IPlugin))) {
+                Terradue.ElasticCas.Model.IPlugin plugin = (Terradue.ElasticCas.Model.IPlugin)node.CreateInstance();
                 Logger.Info("Load " + node.Id);
                 Plugins.Add(plugin);
             }

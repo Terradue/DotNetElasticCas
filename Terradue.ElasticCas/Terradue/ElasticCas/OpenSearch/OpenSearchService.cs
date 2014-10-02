@@ -1,5 +1,4 @@
 ﻿using System;
-using Terradue.ElasticCas.Service;
 using Terradue.ElasticCas.Request;
 using Terradue.ElasticCas.Model;
 using Terradue.OpenSearch.Engine;
@@ -10,8 +9,9 @@ using System.Collections.Specialized;
 using Terradue.ServiceModel.Syndication;
 using System.Collections.ObjectModel;
 using Terradue.OpenSearch.Result;
+using Terradue.OpenSearch.Schema;
 
-namespace Terradue.ElasticCas.Service {
+namespace Terradue.ElasticCas.OpenSearch {
     public class OpenSearchService {
 
         public static IOpenSearchResult QueryResult(IElasticDocumentCollection collection, NameValueCollection parameters) {
@@ -42,6 +42,21 @@ namespace Terradue.ElasticCas.Service {
             return new HttpResult(result.Result.SerializeToString(), result.Result.ContentType);
         }
 
+        public static string EntrySelfLinkTemplate(IOpenSearchResultItem item, OpenSearchDescription osd, string mimeType) {
+            if (item == null)
+                return null;
+
+            string identifier = item.Identifier;
+
+            NameValueCollection nvc = new NameValueCollection();
+
+            nvc.Set("q", string.Format("_id:{0}", item.Identifier));
+
+            UriBuilder template = new UriBuilder(OpenSearchFactory.GetOpenSearchUrlByType(osd, mimeType).Template);
+            string[] queryString = Array.ConvertAll(nvc.AllKeys, key => string.Format("{0}={1}", key, nvc[key]));
+            template.Query = string.Join("&", queryString);
+            return template.ToString();
+        }
     }
 }
 

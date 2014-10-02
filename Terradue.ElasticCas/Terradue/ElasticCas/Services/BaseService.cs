@@ -7,7 +7,7 @@ using log4net;
 using PlainElastic.Net.Serialization;
 using Terradue.ElasticCas.Controller;
 
-namespace Terradue.ElasticCas.Service {
+namespace Terradue.ElasticCas.Services {
     public class BaseService : ServiceStack.ServiceInterface.Service {
 		
 		protected ElasticConnection esConnection;

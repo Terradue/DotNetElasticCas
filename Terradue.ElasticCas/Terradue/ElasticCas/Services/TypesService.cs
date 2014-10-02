@@ -1,27 +1,23 @@
 using System;
 using ServiceStack;
-using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceHost;
-using PlainElastic.Net;
-using ServiceStack.Text;
-using PlainElastic.Net.Serialization;
-using ServiceStack.Common.Web;
-using PlainElastic.Net.Utils;
-using Terradue.OpenSearch;
-using Terradue.OpenSearch.Engine.Extensions;
-using System.Security.Policy;
-using System.Web;
-using System.Collections.Specialized;
-using System.Net;
-using Terradue.OpenSearch.Result;
-using Terradue.ElasticCas.Request;
-using Terradue.OpenSearch.Engine;
 using Terradue.ElasticCas.Model;
-using Terradue.OpenSearch.GeoJson.Extensions;
-using System.Collections.ObjectModel;
+using Terradue.ElasticCas.Request;
+using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface;
+using ServiceStack.Common.Web;
+using Terradue.ElasticCas.Controller;
+using Terradue.ElasticCas.Types;
+using Terradue.OpenSearch.Engine;
+using System.Collections.Specialized;
+using Terradue.OpenSearch;
 using Terradue.OpenSearch.Response;
+using Terradue.OpenSearch.Result;
+using System.Collections.ObjectModel;
+using PlainElastic.Net;
+using PlainElastic.Net.Utils;
+using ServiceStack.Text;
 
-namespace Terradue.ElasticCas.Service {
+namespace Terradue.ElasticCas.Services {
     [Api("Type Ingestion Service")]
     [Restrict(EndpointAttributes.InSecure | EndpointAttributes.InternalNetworkAccess | EndpointAttributes.Json,
               EndpointAttributes.Secure | EndpointAttributes.External | EndpointAttributes.Json)]
@@ -31,39 +27,21 @@ namespace Terradue.ElasticCas.Service {
         }
 
         [AddHeader(ContentType = ContentType.Json)]
-        public object Post(IElasticDocumentCollection collection) {
-
-            string command = new BulkCommand(index: collection.IndexName, type: collection.TypeName);
-
-            string bulkJson = 
-                new BulkBuilder(serializer)
-                    .BuildCollection(collection.Items,
-                                     (builder, item) => builder.Index(data: item, id: item.Id.Replace('.', '_'))
-                );
-
-            string response;
-
-            try {
-                response = esConnection.Post(command, bulkJson);
-            } catch (Exception e) {
-                throw e;
-            }
-            return response;
-        }
-
-        [AddHeader(ContentType = ContentType.Json)]
         public object Post(IngestionRequest request) {
 
             string response = "";
 
             try {
 
-                IElasticDocumentCollection documents = ElasticCasFactory.GetElasticDocumentCollectionByTypeName(request.TypeName);
+                IElasticDocumentCollection collection = ElasticCasFactory.GetElasticDocumentCollectionByTypeName(request.TypeName);
 
-                if (documents == null)
-                    throw new InvalidTypeModelException(request.TypeName, string.Format("Type '{0}' is not found in the type extensions. Check that plugins are loaded", request.TypeName));
+                if (collection == null) {
+                    var gcollection = new GenericJsonCollection();
+                    gcollection.TypeName = request.TypeName;
+                    collection = gcollection;
+                }
 
-                OpenSearchEngine ose = documents.GetOpenSearchEngine(new NameValueCollection());
+                OpenSearchEngine ose = collection.GetOpenSearchEngine(new NameValueCollection());
 
                 IOpenSearchEngineExtension osee = ose.GetExtensionByContentTypeAbility(Request.ContentType);
                 if (osee == null)
@@ -72,11 +50,12 @@ namespace Terradue.ElasticCas.Service {
                 MemoryOpenSearchResponse payload = new MemoryOpenSearchResponse(Request.GetRawBody(), Request.ContentType);
 
                 IOpenSearchResultCollection results = osee.ReadNative(payload);
+
                 OpenSearchFactory.RemoveLinksByRel(ref results,"alternate");
                 OpenSearchFactory.RemoveLinksByRel(ref results,"self");
                 OpenSearchFactory.RemoveLinksByRel(ref results,"search");
 
-                Collection<IElasticDocument> docs = documents.CreateFromOpenSearchResultCollection(results);
+                Collection<IElasticDocument> docs = collection.CreateFromOpenSearchResultCollection(results);
 
                 string command = new BulkCommand(index: request.IndexName, type: request.TypeName);
 
@@ -105,8 +84,11 @@ namespace Terradue.ElasticCas.Service {
 
             IElasticDocumentCollection collection = ElasticCasFactory.GetElasticDocumentCollectionByTypeName(request.TypeName);
 
-            if (collection == null)
-                throw new InvalidTypeModelException(request.TypeName, string.Format("Type '{0}' is not found in the type extensions. Check that plugins are loaded", request.TypeName));
+            if (collection == null) {
+                var gcollection = new GenericJsonCollection();
+                gcollection.TypeName = request.TypeName;
+                collection = gcollection;
+            }
 
             IOpenSearchResult osres = ose.Query(entity, new NameValueCollection());
             OpenSearchFactory.RemoveLinksByRel(ref osres, "alternate");
@@ -168,8 +150,11 @@ namespace Terradue.ElasticCas.Service {
 
             IElasticDocument document = ElasticCasFactory.GetElasticDocumentByTypeName(request.TypeName);
 
-            if (document == null)
-                throw new InvalidTypeModelException(request.TypeName, string.Format("Type '{0}' is not found in the type extensions. Check that plugins are loaded", request.TypeName));
+            if (document == null) {
+                var gdocument = new GenericJson();
+                gdocument.TypeName = request.TypeName;
+                document = gdocument;
+            }
                 
             return document.GetTypeNamespaces();
         }

@@ -19,8 +19,10 @@ using Terradue.ElasticCas.Controller;
 using Terradue.ElasticCas.Model;
 using Terradue.ElasticCas.Request;
 using Terradue.ElasticCas.Routes;
+using Terradue.ElasticCas.Exceptions;
+using Terradue.ElasticCas.OpenSearch;
 
-namespace Terradue.ElasticCas.Service {
+namespace Terradue.ElasticCas.Services {
     [Api("Routing Service")]
     [Restrict(EndpointAttributes.InSecure | EndpointAttributes.InternalNetworkAccess | EndpointAttributes.Json,
               EndpointAttributes.Secure | EndpointAttributes.External | EndpointAttributes.Json)]

@@ -8,7 +8,7 @@ using PlainElastic.Net.Serialization;
 using ServiceStack.Common.Web;
 using Terradue.ElasticCas.Request;
 
-namespace Terradue.ElasticCas.Service {
+namespace Terradue.ElasticCas.Services {
 	[Api("Index Service")]
 	[Restrict(EndpointAttributes.InSecure | EndpointAttributes.InternalNetworkAccess | EndpointAttributes.Json,
 	          EndpointAttributes.Secure | EndpointAttributes.External | EndpointAttributes.Json)]

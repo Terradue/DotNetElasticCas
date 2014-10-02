@@ -10,7 +10,7 @@ using Terradue.ServiceModel.Syndication;
 using Terradue.ElasticCas.Model;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Support;
-using Terradue.ElasticCas.Service;
+using Terradue.ElasticCas.Services;
 using System.Collections.Specialized;
 using System.IO;
 
