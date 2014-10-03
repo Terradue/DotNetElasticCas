@@ -11,3 +11,5 @@ packages
 /Terradue.ElasticCas/bin
 
 /Terradue.ElasticCas/obj/
+
+*.nupkg
