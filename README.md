@@ -31,6 +31,10 @@ $ curl -XPOST 'http://localhost:8082/catalogue/twitter/tweet' -d '{
 ```
 
 All fields are indexed by default so that an OpenSearch Description is built dynamically anyhow.
+```js
+$ curl 'http://localhost:8082/catalogue/twitter/tweet/description'
+```
+
 ```xml
 <OpenSearchDescriptionOpenSearchDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://a9.com/-/spec/opensearch/1.1/">
 	<ShortName>twitter Elastic Catalogue</ShortName>
@@ -52,7 +56,7 @@ All fields are indexed by default so that an OpenSearch Description is built dyn
 
 From OpenSearch query and its parameters, ElasticCas builds simple or complex queries according to the document type (plugins).
 ```js
-$ curl -XGET 'http://localhost:8082/catalogue/twitter/tweet/search?q=bob'
+$ curl -XGET 'http://localhost:8082/catalogue/twitter/tweet/search?q=bob&format=json'
 ```
 
 Finally, it returns results in various formats (plugins).
