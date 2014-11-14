@@ -2,8 +2,8 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>Terradue.ElasticCas</id>
-    <version>1.0.0-beta</version>
-    <title>Terradue.OpenSearch</title>
+    <version>1.0.1</version>
+    <title>Terradue.ElasticCas</title>
     <authors>Terradue</authors>
     <projectUrl>https://github.com/Terradue/DotNetElasticCas</projectUrl>
     <licenseUrl>https://github.com/Terradue/DotNetElasticCas/blob/master/LICENSE</licenseUrl>
@@ -12,7 +12,7 @@
     <summary>OpenSearch engine for elasticsearch</summary>
     <dependencies>
       <dependency id="Terradue.ServiceModel.Syndication" version="[1.0.0,)" />
-      <dependency id="Terradue.OpenSearch" version="[1.7.0,1.8)" />
+      <dependency id="Terradue.OpenSearch" version="[1.7.4,1.8)" />
       <dependency id="PlainElastic.Net" version="[1.0.48,)" />
       <dependency id="log4net" version="[2.0.0,)" />
       <dependency id="ServiceStack" version="[3.9.71,4)" />
