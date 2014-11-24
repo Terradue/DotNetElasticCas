@@ -8,7 +8,6 @@ using Terradue.ServiceModel.Syndication;
 using Mono.Addins;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
-using PlainElastic.Net.Mappings;
 using Terradue.ElasticCas.OpenSearch;
 using Terradue.OpenSearch.Schema;
 using Terradue.OpenSearch.Engine;
@@ -20,21 +19,19 @@ using Terradue.ElasticCas.OpenSearch.Extensions;
 using System.Web;
 using System.IO;
 using Terradue.ElasticCas.Controller;
-using PlainElastic.Net.Serialization;
 using System.Xml.Linq;
 using System.Diagnostics;
+using Nest;
 
 namespace Terradue.ElasticCas.Types {
-    [Extension(typeof(IElasticDocumentCollection))]
-    [ExtensionNode("GenericCollection", "Collection of generic documents")]
-    public class GenericJsonCollection : IElasticDocumentCollection {
 
-        OpenSearchDescription proxyOpenSearchDescription;
+    public class GenericJsonCollection : IElasticDocumentCollection {
 
         public GenericJsonCollection() {
 
             links = new Collection<Terradue.ServiceModel.Syndication.SyndicationLink>();
             elementExtensions = new SyndicationElementExtensionCollection();
+            authors = new Collection<SyndicationPerson>();
 
         }
 
@@ -65,10 +62,6 @@ namespace Terradue.ElasticCas.Types {
             }
         }
 
-        public System.Type GetOpenSearchResultType() {
-            return typeof(GenericJsonCollection);
-        }
-
         public static GenericJsonCollection FromOpenSearchResultCollection(IOpenSearchResultCollection results) {
 
             if (results is GenericJsonCollection)
@@ -87,118 +80,13 @@ namespace Terradue.ElasticCas.Types {
 
         public Collection<IElasticDocument> CreateFromOpenSearchResultCollection(IOpenSearchResultCollection results) {
 
-            return new Collection<IElasticDocument>(FromOpenSearchResultCollection(results).items.Cast<IElasticDocument>().ToList());
-
-        }
-
-        public PlainElastic.Net.Queries.QueryBuilder<object> BuildQuery(System.Collections.Specialized.NameValueCollection nvc) {
-
-            PlainElastic.Net.Queries.QueryBuilder<object> query = new PlainElastic.Net.Queries.QueryBuilder<object>();
-
-            query.Query(q => q.MatchAll());
-
-            return query;
-
-        }
-
-        Dictionary<string, object> parameters;
-
-        public Dictionary<string, object> Parameters {
-            get {
-                return parameters;
+            Collection<GenericJson> docs = new Collection<GenericJson>(FromOpenSearchResultCollection(results).items);
+            foreach (var doc in docs) {
+                doc.TypeName = this.TypeName;
             }
-            set {
-                parameters = value;
-            }
-        }
 
-        public string EntrySelfLinkTemplate(IOpenSearchResultItem item, OpenSearchDescription osd, string mimeType) {
-            return OpenSearchService.EntrySelfLinkTemplate(item, osd, mimeType);
-        }
+            return new Collection<IElasticDocument>(docs.Cast<IElasticDocument>().ToList());
 
-        public OpenSearchEngine GetOpenSearchEngine(NameValueCollection nvc) {
-            OpenSearchEngine ose = new OpenSearchEngine();
-            ose.LoadPlugins();
-            foreach (var ext in ose.Extensions.ToList()) {
-                if (ext.Value.DiscoveryContentType == "application/json")
-                    ose.Extensions.Remove(ext.Key);
-            }
-            ose.RegisterExtension(new GenericJsonOpenSearchEngineExtension());
-            return ose;
-        }
-
-        public OpenSearchDescription GetProxyOpenSearchDescription() {
-            return proxyOpenSearchDescription;
-        }
-
-        public QuerySettings GetQuerySettings(OpenSearchEngine ose) {
-
-            return new QuerySettings(this.DefaultMimeType, GenericJsonCollection.TransformElasticJsonResponseToGenericCollection);
-        }
-
-        public Terradue.OpenSearch.Request.OpenSearchRequest Create(string mimetype, System.Collections.Specialized.NameValueCollection parameters) {
-            return ElasticOpenSearchRequest.Create(parameters, this);
-        }
-
-        public Terradue.OpenSearch.Schema.OpenSearchDescription GetOpenSearchDescription() {
-            OpenSearchDescription osd = new OpenSearchDescription();
-
-            osd.ShortName = "Elastic Catalogue";
-            osd.Attribution = "Terradue";
-            osd.Contact = "info@terradue.com";
-            osd.Developer = "Terradue GeoSpatial Development Team";
-            osd.SyndicationRight = "open";
-            osd.AdultContent = "false";
-            osd.Language = "en-us";
-            osd.OutputEncoding = "UTF-8";
-            osd.InputEncoding = "UTF-8";
-            osd.Description = "This Search Service performs queries in the available dataset catalogue. There are several URL templates that return the results in different formats (GeoJson, RDF, ATOM or KML). This search service is in accordance with the OGC 10-032r3 specification.";
-
-            OpenSearchEngine ose = new OpenSearchEngine();
-            ose.LoadPlugins();
-
-            var searchExtensions = ose.Extensions;
-            List<OpenSearchDescriptionUrl> urls = new List<OpenSearchDescriptionUrl>();
-
-            NameValueCollection parameters = GetOpenSearchParameters(this.DefaultMimeType);
-
-            UriBuilder searchUrl = new UriBuilder(string.Format("es://elasticsearch/{0}/{1}/search", IndexName, TypeName));
-            NameValueCollection queryString = HttpUtility.ParseQueryString("?format=json");
-            parameters.AllKeys.FirstOrDefault(k => {
-                queryString.Add(parameters[k], "{" + k + "?}");
-                return false;
-            });
-
-
-            searchUrl.Query = queryString.ToString();
-            urls.Add(new OpenSearchDescriptionUrl("application/json", 
-                                                  searchUrl.ToString(),
-                                                  "search"));
-
-            osd.Url = urls.ToArray();
-
-            return osd;
-        }
-
-        public System.Collections.Specialized.NameValueCollection GetOpenSearchParameters(string mimeType) {
-            return OpenSearchFactory.ReverseTemplateOpenSearchParameters(OpenSearchFactory.GetBaseOpenSearchParameter());
-        }
-
-        public long TotalResults {
-            get {
-                var eosRequest = ElasticOpenSearchRequest.Create(new NameValueCollection(), this);
-                return (long)eosRequest.Count();
-            }
-        }
-
-        public void ApplyResultFilters(OpenSearchRequest request,  ref IOpenSearchResultCollection osr) {
-
-        }
-
-        public string DefaultMimeType {
-            get {
-                return "application/json";
-            }
         }
 
         public void SerializeToStream(System.IO.Stream stream) {
@@ -215,12 +103,19 @@ namespace Terradue.ElasticCas.Types {
             return sr.ReadToEnd();
         }
 
+        string id;
         public string Id {
             get {
-                throw new NotImplementedException();
+                if (string.IsNullOrEmpty(id) && Links != null && Links.Count > 0) {
+                    var link = Links.FirstOrDefault(s => {
+                        return s.RelationshipType == "self";
+                    });
+                    id = link.Uri.ToString();
+                }
+                return id;
             }
             set {
-                throw new NotImplementedException();
+                id = value;
             }
         }
 
@@ -298,10 +193,9 @@ namespace Terradue.ElasticCas.Types {
             }
         }
 
-        readonly string contentType;
         public string ContentType {
             get {
-                return contentType;
+                return "application/json";
             }
         }
 
@@ -311,6 +205,12 @@ namespace Terradue.ElasticCas.Types {
             }
             set {
 
+            }
+        }
+
+        public long TotalResults {
+            get {
+                return Items.Count();
             }
         }
 
@@ -336,39 +236,28 @@ namespace Terradue.ElasticCas.Types {
 
         public static GenericJsonCollection TransformElasticJsonResponseToGenericCollection(OpenSearchResponse response) {
 
-            if (response is ElasticOpenSearchResponse) {
-                var results = ((ElasticOpenSearchResponse)response).GetOperationResult();
-                ServiceStackJsonSerializer ser = new ServiceStackJsonSerializer();
-
-                SearchResult<JsonObject> items = ser.ToSearchResult<JsonObject>(results);
+            if (response is ElasticOpenSearchResponse<GenericJson>) {
+                var results = ((ElasticOpenSearchResponse<GenericJson>)response).GetSearchResponse();
 
                 GenericJsonCollection collection = new GenericJsonCollection();
                 collection.items = new List<GenericJson>();
 
-                foreach (var hit in items.hits.hits) {
-                    GenericJson item = new GenericJson(hit._source);
-                    item.Identifier = hit._id;
-                    collection.items.Add(item);
-
+                foreach (var doc in results.Documents) {
+                    if ( doc is GenericJson) {
+                        collection.items.Add((GenericJson)doc);
+                    }
+                    else
+                        throw new InvalidDataException("Result is not a GenericJson document.");
                 }
                 collection.ShowNamespaces = true;
                 collection.Date = DateTime.UtcNow;
-                collection.ElementExtensions.Add(new XElement(XName.Get("totalResults", "http://a9.com/-/spec/opensearch/1.1/"), ((ElasticOpenSearchResponse)response).TotalResult).CreateReader());
+                collection.ElementExtensions.Add(new XElement(XName.Get("totalResults", "http://a9.com/-/spec/opensearch/1.1/"), ((ElasticOpenSearchResponse<GenericJson>)response).TotalResult).CreateReader());
 
                 return collection;
 
 
             } else {
                 throw new NotImplementedException("GenericCollection only transforms from an ElasticOpenSearchResponse");
-            }
-        }
-
-        public OpenSearchDescription ProxyOpenSearchDescription {
-            get {
-                return proxyOpenSearchDescription;
-            }
-            set {
-                proxyOpenSearchDescription = value;
             }
         }
     }

@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
-using PlainElastic.Net.Queries;
 
 namespace Terradue.ElasticCas.Model
 {

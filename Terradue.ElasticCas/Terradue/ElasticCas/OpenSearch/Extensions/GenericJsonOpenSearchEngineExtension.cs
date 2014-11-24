@@ -26,7 +26,7 @@ namespace Terradue.ElasticCas.OpenSearch.Extensions {
         }
 
         public override Type GetTransformType() {
-            return typeof(GenericJsonCollection);
+            return typeof(GenericJson);
         }
 
         public override IOpenSearchResultCollection ReadNative(OpenSearchResponse response) {

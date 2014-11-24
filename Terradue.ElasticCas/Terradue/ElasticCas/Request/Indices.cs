@@ -1,27 +1,19 @@
 using System;
 using ServiceStack.ServiceHost;
-using PlainElastic.Net.IndexSettings;
-using PlainElastic.Net.Serialization;
-using PlainElastic.Net;
 using Terradue.ElasticCas.Model;
+using Nest;
 
 namespace Terradue.ElasticCas.Request {
 
-	    
-	public class GetIndexRequest {
-
-		public string IndexName { get; set; }
-
-    }
 
 	[Route("/catalogue/{IndexName}", "PUT")]
-    public class CreateIndexRequest : Index, IReturn<OperationResult>{
+    public class CreateIndexRequest : Index, IReturn<IndexStatus>{
 
 		
 	}
 
     [Route("/catalogue/{IndexName}", "DELETE")]
-    public class DeleteIndexRequest : IReturn<OperationResult>{
+    public class DeleteIndexRequest : IReturn<string>{
 
         public string IndexName { get; set; }
     }

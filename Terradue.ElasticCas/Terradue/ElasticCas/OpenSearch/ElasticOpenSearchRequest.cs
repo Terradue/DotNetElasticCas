@@ -3,29 +3,32 @@ using System.Linq;
 using Terradue.OpenSearch.Request;
 using ServiceStack.Common.Web;
 using Terradue.ElasticCas.Model;
-using PlainElastic.Net;
 using Terradue.OpenSearch.Response;
 using System.IO;
 using System.Web;
-using PlainElastic.Net.Serialization;
 using Terradue.ElasticCas.Controller;
 using Terradue.OpenSearch.Engine;
 using System.Diagnostics;
+using Nest;
+using Terradue.ElasticCas.Types;
 
 namespace Terradue.ElasticCas.OpenSearch {
-    public class ElasticOpenSearchRequest : OpenSearchRequest {
+    public class ElasticOpenSearchRequest<T> : OpenSearchRequest where T: class, IElasticDocument, new() {
 
         string indexName;
         string typeName;
 
-        ElasticConnection esConnection;
+        Type resultType;
 
-        string queryJson;
+        ElasticClientWrapper client;
 
-        internal ElasticOpenSearchRequest(ElasticConnection esConnection, string indexName, string typeName, System.Collections.Specialized.NameValueCollection parameters) : base(BuildOpenSearchUrl(esConnection, indexName, typeName, parameters)) {
+        ISearchRequest search;
+
+        internal ElasticOpenSearchRequest(ElasticClientWrapper client, string indexName, string typeName, System.Collections.Specialized.NameValueCollection parameters) : base(BuildOpenSearchUrl(indexName, typeName, parameters)) {
+            this.resultType = resultType;
             this.indexName = indexName;
             this.typeName = typeName;
-            this.esConnection = esConnection;
+            this.client = client;
         }
 
         public string IndexName {
@@ -40,45 +43,50 @@ namespace Terradue.ElasticCas.OpenSearch {
             }
         }
 
-        internal string QueryJson {
+        internal ISearchRequest SearchRequest {
             get {
-                return queryJson;
+                return search;
             }
             set {
-                queryJson = value;
+                search = value;
             }
         }
 
-        public static ElasticOpenSearchRequest Create(System.Collections.Specialized.NameValueCollection parameters, IElasticDocumentCollection collection) {
+        public static ElasticOpenSearchRequest<T> Create(System.Collections.Specialized.NameValueCollection parameters, IElasticDocument document) {
 
             ElasticCasFactory ecf = new ElasticCasFactory("ElasticOpenSearchRequest");
 
-            ElasticOpenSearchRequest eosRequest = new ElasticOpenSearchRequest(ecf.EsConnection, collection.IndexName, collection.TypeName, parameters);
+            ElasticOpenSearchRequest<T> eosRequest = new ElasticOpenSearchRequest<T>(ecf.Client, document.IndexName, document.TypeName, parameters);
 
-            var query = collection.BuildQuery(parameters);
+            var search = new Nest.SearchRequest(document.IndexName, document.TypeName);
+
+            var query = document.BuildQuery(parameters);
+            search.Query = query;
+            search.QueryString = new Elasticsearch.Net.SearchRequestParameters();
 
             if (!string.IsNullOrEmpty(parameters["count"])) {
-                query.Size(int.Parse(parameters["count"]));
+                search.Size = int.Parse(parameters["count"]);
             } else {
-                query.Size(OpenSearchEngine.DEFAULT_COUNT);
+                search.Size = OpenSearchEngine.DEFAULT_COUNT;
             }
 
             if (!string.IsNullOrEmpty(parameters["startIndex"])) {
-                query.From(int.Parse(parameters["startIndex"]) - 1);
+                search.From = int.Parse(parameters["startIndex"]) - 1;
             }
 
             if (!string.IsNullOrEmpty(parameters["q"])) {
+
                 eosRequest.Parameters.Set("q", parameters["q"]);
             }
 
-            eosRequest.QueryJson = query.Build();
+            eosRequest.search = search;
 
             return eosRequest;
 
         }
 
-        static Terradue.OpenSearch.OpenSearchUrl BuildOpenSearchUrl(ElasticConnection esConnection, string indexName, string typeName, System.Collections.Specialized.NameValueCollection parameters) {
-            UriBuilder url = new UriBuilder(string.Format("es://{0}:{1}/{2}/{3}/search", esConnection.DefaultHost, esConnection.DefaultPort, indexName, typeName));
+        static Terradue.OpenSearch.OpenSearchUrl BuildOpenSearchUrl(string indexName, string typeName, System.Collections.Specialized.NameValueCollection parameters) {
+            UriBuilder url = new UriBuilder(string.Format("{0}/{1}/{2}/search", Settings.ElasticSearchServer, indexName, typeName));
             var array = (from key in parameters.AllKeys
                                   from value in parameters.GetValues(key)
                                   select string.Format("{0}={1}", HttpUtility.UrlEncode(key), HttpUtility.UrlEncode(value)))
@@ -88,25 +96,19 @@ namespace Terradue.ElasticCas.OpenSearch {
             return new Terradue.OpenSearch.OpenSearchUrl(url.Uri);
         }
 
-        public long Count() {
-            var command = new CountCommand(IndexName, TypeName);
-            var result = esConnection.Get(command, queryJson);
+        public long Count()  {
 
-            ServiceStackJsonSerializer ser = new ServiceStackJsonSerializer();
-            return ser.ToCountResult(result).count;
+            ISearchResponse<T> response = client.Search<T>(SearchRequest);
+
+            return response.Total;
         }
 
         #region implemented abstract members of OpenSearchRequest
 
-        public override Terradue.OpenSearch.Response.OpenSearchResponse GetResponse() {
+        public override OpenSearchResponse GetResponse() {
 
-            var command = new SearchCommand(IndexName, TypeName);
-            command.Q(Parameters["q"]);
-
-            OperationResult result = esConnection.Post(command, queryJson);
-            return new ElasticOpenSearchResponse(result);
-
-
+            var response = client.Search<T>(SearchRequest);
+            return new ElasticOpenSearchResponse<T>(response);
 
         }
 

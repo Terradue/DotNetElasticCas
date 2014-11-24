@@ -8,7 +8,6 @@ using ServiceStack;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.Common.Web;
-using PlainElastic.Net;
 
 namespace Terradue.ElasticCas
 {
