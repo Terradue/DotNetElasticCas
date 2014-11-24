@@ -1,41 +1,27 @@
 ﻿using System;
 using Terradue.OpenSearch.Response;
-using PlainElastic.Net;
-using PlainElastic.Net.Serialization;
 using System.IO;
 using Terradue.ElasticCas.Controller;
+using Terradue.ElasticCas.Model;
 
 namespace Terradue.ElasticCas.OpenSearch {
-    public class ElasticOpenSearchResponse : OpenSearchResponse {
+    public class ElasticOpenSearchResponse<T> : OpenSearchResponse where T: class, IElasticDocument, new() {
 
-        OperationResult result;
+        Nest.ISearchResponse<T> result;
 
-        public ElasticOpenSearchResponse(OperationResult result) {
+        public ElasticOpenSearchResponse(Nest.ISearchResponse<T> result) {
             this.result = result;
         }
 
         #region implemented abstract members of OpenSearchResponse
 
         public override System.IO.Stream GetResponseStream() {
-            ServiceStackJsonSerializer ser= new ServiceStackJsonSerializer();
-
-            var results = ser.ToSearchResult<string>(result);
 
             MemoryStream ms = new MemoryStream();
 
             StreamWriter sw = new StreamWriter(ms);
 
-            /*sw.Write("{\"collection\":{\"features\":[");*/
-            sw.Write("{[");
-            string sep = "";
-
-            foreach ( string document in results.Documents ){
-                sw.Write(sep+document);
-                sep = ",";
-            }
-
-            //sw.Write("],\"type\":\"FeatureCollection\"}");
-            sw.Write("]}");
+            sw.Write(result.RequestInformation.ResponseRaw);
 
             sw.Flush();
             sw.Close();
@@ -53,27 +39,19 @@ namespace Terradue.ElasticCas.OpenSearch {
 
         public override TimeSpan RequestTime {
             get {
-                ServiceStackJsonSerializer ser = new ServiceStackJsonSerializer();
-
-                var results = ser.ToSearchResult<object>(result);
-
-                return new TimeSpan(results.took);
+                return new TimeSpan(0,0,0,0,result.ElapsedMilliseconds);
             }
         }
 
         #endregion
 
-        public int TotalResult {
+        public long TotalResult {
             get {
-                ServiceStackJsonSerializer ser = new ServiceStackJsonSerializer();
-
-                var results = ser.ToSearchResult<object>(result);
-
-                return results.hits.total;
+                return result.Total;
             }
         }
 
-        public OperationResult GetOperationResult()
+        public Nest.ISearchResponse<T> GetSearchResponse()
         {
             return result;
         }

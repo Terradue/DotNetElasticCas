@@ -8,6 +8,8 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Terradue.ElasticCas</RootNamespace>
     <AssemblyName>Terradue.ElasticCas</AssemblyName>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -31,9 +33,6 @@
     <Reference Include="System" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
-    <Reference Include="PlainElastic.Net">
-      <HintPath>..\packages\PlainElastic.Net.1.0.48\lib\Net40\PlainElastic.Net.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\packages\ServiceStack.Common.3.9.71\lib\net35\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
@@ -54,13 +53,24 @@
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Addins, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
     <Reference Include="Terradue.ServiceModel.Syndication">
       <HintPath>..\packages\Terradue.ServiceModel.Syndication.1.0.0.0\lib\net40\Terradue.ServiceModel.Syndication.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Nest">
+      <HintPath>..\packages\NEST.1.2.3\lib\Nest.dll</HintPath>
+    </Reference>
+    <Reference Include="Elasticsearch.Net">
+      <HintPath>..\packages\Elasticsearch.Net.1.2.3\lib\Elasticsearch.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Addins">
+      <HintPath>..\packages\Mono.Addins.1.2\lib\net40\Mono.Addins.dll</HintPath>
+    </Reference>
     <Reference Include="Terradue.OpenSearch">
-      <HintPath>..\packages\Terradue.OpenSearch.1.7.4\lib\net40\Terradue.OpenSearch.dll</HintPath>
+      <HintPath>..\packages\Terradue.OpenSearch.1.7.10\lib\net40\Terradue.OpenSearch.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -93,7 +103,6 @@
     <Compile Include="Terradue\ElasticCas\Request\Routing.cs" />
     <Compile Include="Terradue\ElasticCas\Services\RoutingService.cs" />
     <Compile Include="Terradue\ElasticCas\Routes\DynamicRouteRequest.cs" />
-    <Compile Include="Terradue\ElasticCas\Controller\ServiceStackJsonSerializer.cs" />
     <Compile Include="Terradue\ElasticCas\OpenSearch\OpenSearchService.cs" />
     <Compile Include="Terradue\ElasticCas\Types\GenericJson.cs" />
     <Compile Include="Terradue\ElasticCas\Types\GenericJsonCollection.cs" />
@@ -103,6 +112,10 @@
     <Compile Include="Terradue\ElasticCas\Model\IPlugin.cs" />
     <Compile Include="Terradue\ElasticCas\OpenSearch\Extensions\GenericJsonOpenSearchEngineExtension.cs" />
     <Compile Include="Terradue\ElasticCas\OpenSearch\DefaultNamespaces.cs" />
+    <Compile Include="Terradue\ElasticCas\Controller\Settings.cs" />
+    <Compile Include="Terradue\ElasticCas\Controller\ElasticClientWrapper.cs" />
+    <Compile Include="Terradue\ElasticCas\Responses\IndexInformation.cs" />
+    <Compile Include="Terradue\ElasticCas\Controller\ReadElasticJsonAsTypeConverter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
@@ -123,6 +136,7 @@
     <Folder Include="Terradue\ElasticCas\Exceptions\" />
     <Folder Include="Terradue\ElasticCas\OpenSearch\" />
     <Folder Include="Terradue\ElasticCas\Routes\" />
+    <Folder Include="Terradue\ElasticCas\Responses\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Terradue.ElasticCas.csproj" />

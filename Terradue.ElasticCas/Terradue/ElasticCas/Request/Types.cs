@@ -2,7 +2,6 @@ using System;
 using ServiceStack.ServiceHost;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
-using PlainElastic.Net.Serialization;
 using ServiceStack.Text;
 using ServiceStack.Text.Json;
 using Terradue.OpenSearch.Result;
@@ -18,7 +17,7 @@ namespace Terradue.ElasticCas.Request {
 
 
     [Route("/catalogue/{IndexName}/{TypeName}", "POST")]
-    public class IngestionRequest : IReturn<IElasticDocument> {
+    public class IngestionRequest {
         public string IndexName { get; set; }
 
         public string TypeName { get; set; }

@@ -11,8 +11,6 @@ using ServiceStack.Text;
 using System.IO;
 using System.Web;
 using System.Collections.Generic;
-using PlainElastic.Net;
-using PlainElastic.Net.Serialization;
 using Terradue.ElasticCas.Request;
 using Terradue.OpenSearch.Schema;
 using Terradue.ElasticCas.Model;
@@ -34,17 +32,17 @@ namespace Terradue.ElasticCas.Services {
         [AddHeader(ContentType = "application/opensearchdescription+xml")]
 		public object Get(OpenSearchDescriptionGetRequest request)
 		{
-            IElasticDocumentCollection collection = ElasticCasFactory.GetElasticDocumentCollectionByTypeName(request.TypeName);
+            IElasticDocument document = ElasticCasFactory.GetElasticDocumentByTypeName(request.TypeName);
 
-            if (collection == null) {
-                var gcollection = new GenericJsonCollection();
-                gcollection.TypeName = request.TypeName;
-                collection = gcollection;
+            if (document == null) {
+                var gdocument = new GenericJson();
+                gdocument.TypeName = request.TypeName;
+                document = gdocument;
             }
 
-            collection.IndexName = request.IndexName;
+            document.IndexName = request.IndexName;
 
-            OpenSearchDescription osd = ecf.GetDefaultOpenSearchDescription(collection);
+            OpenSearchDescription osd = ecf.GetDefaultOpenSearchDescription(document);
 
             return new HttpResult(osd, "application/opensearchdescription+xml");
 

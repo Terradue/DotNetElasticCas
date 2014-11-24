@@ -2,11 +2,10 @@ using System;
 using ServiceStack;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceHost;
-using PlainElastic.Net;
 using ServiceStack.Text;
-using PlainElastic.Net.Serialization;
 using ServiceStack.Common.Web;
 using Terradue.ElasticCas.Request;
+using Terradue.ElasticCas.Responses;
 
 namespace Terradue.ElasticCas.Services {
 	[Api("Index Service")]
@@ -19,32 +18,17 @@ namespace Terradue.ElasticCas.Services {
 		}
 
 		[AddHeader(ContentType=ContentType.Json)]
-        public object Get(GetIndexRequest request) {
-            string command = Commands.GetMapping(request.IndexName);
-			string response;
+        public IndexInformation Put(CreateIndexRequest request) {
+            var indexInformation = ecf.CreateCatalogueIndex(request);
+            client.Index(request.ToJson(), i => i.Index("ec_indices").Id(request.IndexName));
 
-			try {
-				response = esConnection.Get(command);
-			} catch (Exception e) {
-				throw e;
-			}
-
-			return response;
-		}
-
-		[AddHeader(ContentType=ContentType.Json)]
-		public object Put(CreateIndexRequest request) {
-            var result = ecf.CreateCatalogueIndex(request);
-            var command = Commands.Index(request.IndexName, "ec_indices", request.IndexName);
-            result = esConnection.Post(command, request.ToJson());
-
-            return request;
+            return indexInformation;
 
 		}
 
         [AddHeader(ContentType=ContentType.Json)]
         public object Delete(DeleteIndexRequest request) {
-            return esConnection.Delete(Commands.Delete(request.IndexName));
+            return client.DeleteIndex(d => d.Index(request.IndexName)).RequestInformation.ResponseRaw;
         }
 	}
 }

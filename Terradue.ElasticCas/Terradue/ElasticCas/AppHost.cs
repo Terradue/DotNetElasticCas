@@ -8,7 +8,6 @@ using ServiceStack;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.Common.Web;
-using PlainElastic.Net;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 using System.Net;
@@ -99,12 +98,6 @@ namespace Terradue.ElasticCas {
                 ResponseStatus responseStatus = ex.ToResponseStatus();
                 if (EndpointHost.DebugMode) {
                     responseStatus.StackTrace = DtoUtils.GetRequestErrorBody(request) + "\n" + ex;
-                }
-                if (ex is OperationException) {
-                    if (((OperationException)ex).HttpStatusCode == 404) {
-                        responseStatus.ErrorCode = "Not Found";
-                        ex = new NotFoundException(ex.Message);
-                    }
                 }
                 return DtoUtils.CreateErrorResponse(request, ex, responseStatus);
             };
