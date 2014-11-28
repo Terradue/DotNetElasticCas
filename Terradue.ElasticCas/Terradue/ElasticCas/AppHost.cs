@@ -23,7 +23,7 @@ using Terradue.ElasticCas.Services;
 using Terradue.ElasticCas.Routes;
 using log4net;
 using Terradue.ServiceModel.Syndication;
-using Terradue.ElasticCas.Controller;
+using Terradue.ElasticCas.Controllers;
 using Terradue.ElasticCas.Types;
 
 namespace Terradue.ElasticCas {
@@ -50,23 +50,13 @@ namespace Terradue.ElasticCas {
 
         public override void Configure(Funq.Container container) {
 
+            JsConfig.ExcludeTypeInfo = true;
+
             Logger.Info("Reading global configuration");
             //register any dependencies your services use, e.g:
             //container.Register<ICacheClient>(new MemoryCacheClient());
             WebConfig =
 				System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration(null);
-
-            JsConfig.ExcludeTypeInfo = true;
-            JsConfig.ConvertObjectTypesIntoStringDictionary = true;
-            JsConfig.ThrowOnDeserializationError = true;
-            JsConfig.IncludePublicFields = true;
-            JsConfig.EmitCamelCaseNames = true;
-            JsConfig<DateTime>.SerializeFn = time => time.ToString("yyyy-MM-ddTHH:mm:ssZ");
-            JsConfig.AssumeUtc = true;
-            JsConfig<GenericJson>.RawSerializeFn = GenericJson.ToJson;
-            JsConfig<GenericJsonCollection>.RawSerializeFn = GenericJsonCollection.ToJson;
-
-            //JsConfig.IncludeTypeInfo = true;
 
             Logger.Info("Configure ServiceStack EndpointHostConfig");
             base.SetConfig(new EndpointHostConfig {
@@ -104,8 +94,6 @@ namespace Terradue.ElasticCas {
 
             Logger.Info("Register ContentType Filters");
             this.ContentTypeFilters.Register("application/opensearchdescription+xml", OpenSearchDescriptionService.OpenSearchDescriptionSerializer, OpenSearchDescriptionService.OpenSearchDescriptionDeserializer);
-            this.ContentTypeFilters.Register("application/atom+xml", OpenSearchQueryRequestService.SerializeToStream, OpenSearchQueryRequestService.DeserializeFromStream);
-
 
             this.PreRequestFilters.Insert(0, (httpReq, httpRes) => {
                 httpReq.UseBufferedStream = true;

@@ -2,17 +2,17 @@
 using Nest;
 using Terradue.ElasticCas.Model;
 
-namespace Terradue.ElasticCas.Controller {
+namespace Terradue.ElasticCas.Controllers {
     public class ElasticClientWrapper : ElasticClient {
 
         private static string _connectionString = Settings.ElasticSearchServer;
 
-        private static ConnectionSettings _settings = 
+        private static ConnectionSettings _connectionsettings = 
             new ConnectionSettings(new Uri(_connectionString))
                 .SetDefaultIndex(Settings.Alias)
                 .ThrowOnElasticsearchServerExceptions();
 
-        public ElasticClientWrapper() : base(_settings) {
+        public ElasticClientWrapper() : base(_connectionsettings) {
 
             /*_settings.AddContractJsonConverters(t => typeof(IElasticDocument).IsAssignableFrom(t)
                                                 ? new NestServiceStackJsonSerializer()
@@ -23,7 +23,7 @@ namespace Terradue.ElasticCas.Controller {
 
         public static ConnectionSettings ConnectionSettings {
             get {
-                return _settings;
+                return _connectionsettings;
             }
         }
     }

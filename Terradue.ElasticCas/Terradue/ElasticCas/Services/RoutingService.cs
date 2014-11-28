@@ -13,7 +13,7 @@ using ServiceStack.WebHost.Endpoints;
 using Terradue.OpenSearch;
 using Terradue.OpenSearch.Engine;
 using Terradue.OpenSearch.Schema;
-using Terradue.ElasticCas.Controller;
+using Terradue.ElasticCas.Controllers;
 using Terradue.ElasticCas.Model;
 using Terradue.ElasticCas.Request;
 using Terradue.ElasticCas.Routes;
@@ -61,8 +61,8 @@ namespace Terradue.ElasticCas.Services {
             }
 
             // Loads the type of the dynamic route
-            IElasticDocument document = ElasticCasFactory.GetElasticDocumentByTypeName(routeDefinition.TypeName);
-            if (document == null) {
+            IOpenSearchableElasticType type = ecf.GetOpenSearchableElasticTypeByName(match.Groups["indexName"].Value, routeDefinition.TypeName);
+            if (type == null) {
                 throw new InvalidTypeModelException(routeDefinition.TypeName, string.Format("Type '{0}' is not found in the type extensions. Check that plugins are loaded", routeDefinition.TypeName));
             }
 
@@ -107,16 +107,13 @@ namespace Terradue.ElasticCas.Services {
             if (osParameters.AllKeys.Contains("enctype"))
                 mimeTypes.Add(osParameters["enctype"]);
 
-            document.ProxyOpenSearchDescription = ecf.GetDefaultOpenSearchDescription(document);
-            OpenSearchDescription osd = document.GetProxyOpenSearchDescription();
+            OpenSearchDescription osd = type.GetProxyOpenSearchDescription();
 
             OpenSearchDescriptionUrl osdUrl = OpenSearchFactory.GetOpenSearchUrlByTypeAndMaxParam(osd, mimeTypes, osParameters);
             osParameters = OpenSearchFactory.ReplaceTemplateByIdentifier(osParameters, osdUrl);
             osParameters.Add(Request.QueryString);
 
-            document.IndexName = match.Groups["indexName"].Value;
-
-            return OpenSearchService.Query(document, osParameters);
+            return OpenSearchService.Query(type, osParameters);
 
         }
 

@@ -6,14 +6,14 @@ using Terradue.ElasticCas.Model;
 using Terradue.OpenSearch.Response;
 using System.IO;
 using System.Web;
-using Terradue.ElasticCas.Controller;
+using Terradue.ElasticCas.Controllers;
 using Terradue.OpenSearch.Engine;
 using System.Diagnostics;
 using Nest;
 using Terradue.ElasticCas.Types;
 
 namespace Terradue.ElasticCas.OpenSearch {
-    public class ElasticOpenSearchRequest<T> : OpenSearchRequest where T: class, IElasticDocument, new() {
+    public class ElasticOpenSearchRequest<T> : OpenSearchRequest where T: class, new() {
 
         string indexName;
         string typeName;
@@ -22,9 +22,10 @@ namespace Terradue.ElasticCas.OpenSearch {
 
         ElasticClientWrapper client;
 
-        ISearchRequest search;
+        IOpenSearchableElasticType type;
 
-        internal ElasticOpenSearchRequest(ElasticClientWrapper client, string indexName, string typeName, System.Collections.Specialized.NameValueCollection parameters) : base(BuildOpenSearchUrl(indexName, typeName, parameters)) {
+        internal ElasticOpenSearchRequest(ElasticClientWrapper client, string indexName, string typeName, System.Collections.Specialized.NameValueCollection parameters, IOpenSearchableElasticType type) : base(BuildOpenSearchUrl(indexName, typeName, parameters)) {
+            this.type = type;
             this.resultType = resultType;
             this.indexName = indexName;
             this.typeName = typeName;
@@ -43,46 +44,33 @@ namespace Terradue.ElasticCas.OpenSearch {
             }
         }
 
-        internal ISearchRequest SearchRequest {
-            get {
-                return search;
-            }
-            set {
-                search = value;
-            }
-        }
-
-        public static ElasticOpenSearchRequest<T> Create(System.Collections.Specialized.NameValueCollection parameters, IElasticDocument document) {
+        public static ElasticOpenSearchRequest<T> Create(System.Collections.Specialized.NameValueCollection parameters, IOpenSearchableElasticType type) {
 
             ElasticCasFactory ecf = new ElasticCasFactory("ElasticOpenSearchRequest");
 
-            ElasticOpenSearchRequest<T> eosRequest = new ElasticOpenSearchRequest<T>(ecf.Client, document.IndexName, document.TypeName, parameters);
-
-            var search = new Nest.SearchRequest(document.IndexName, document.TypeName);
-
-            var query = document.BuildQuery(parameters);
-            search.Query = query;
-            search.QueryString = new Elasticsearch.Net.SearchRequestParameters();
-
-            if (!string.IsNullOrEmpty(parameters["count"])) {
-                search.Size = int.Parse(parameters["count"]);
-            } else {
-                search.Size = OpenSearchEngine.DEFAULT_COUNT;
-            }
-
-            if (!string.IsNullOrEmpty(parameters["startIndex"])) {
-                search.From = int.Parse(parameters["startIndex"]) - 1;
-            }
-
-            if (!string.IsNullOrEmpty(parameters["q"])) {
-
-                eosRequest.Parameters.Set("q", parameters["q"]);
-            }
-
-            eosRequest.search = search;
+            ElasticOpenSearchRequest<T> eosRequest = new ElasticOpenSearchRequest<T>(ecf.Client, type.Index.Name, type.Type.Name, parameters, type);
 
             return eosRequest;
 
+        }
+
+        public SearchDescriptor<T> DescribeSearch(SearchDescriptor<T> search){
+
+            search.Index(indexName).Type(typeName);
+
+            type.DescribeSearch(search, Parameters);
+
+            if (!string.IsNullOrEmpty(Parameters["count"])) {
+                search.Size(int.Parse(Parameters["count"]));
+            } else {
+                search.Size(OpenSearchEngine.DEFAULT_COUNT);
+            }
+
+            if (!string.IsNullOrEmpty(Parameters["startIndex"])) {
+                search.From(int.Parse(Parameters["startIndex"]) - 1);
+            }
+
+            return search;
         }
 
         static Terradue.OpenSearch.OpenSearchUrl BuildOpenSearchUrl(string indexName, string typeName, System.Collections.Specialized.NameValueCollection parameters) {
@@ -98,7 +86,7 @@ namespace Terradue.ElasticCas.OpenSearch {
 
         public long Count()  {
 
-            ISearchResponse<T> response = client.Search<T>(SearchRequest);
+            ISearchResponse<T> response = client.Search<T>(DescribeSearch);
 
             return response.Total;
         }
@@ -107,7 +95,7 @@ namespace Terradue.ElasticCas.OpenSearch {
 
         public override OpenSearchResponse GetResponse() {
 
-            var response = client.Search<T>(SearchRequest);
+            var response = client.Search<T>(DescribeSearch);
             return new ElasticOpenSearchResponse<T>(response);
 
         }

@@ -12,8 +12,9 @@ using System.IO;
 using Terradue.ServiceModel.Syndication;
 using System.Xml;
 using Terradue.ElasticCas.Types;
-using Terradue.ElasticCas.Controller;
+using Terradue.ElasticCas.Controllers;
 using Terradue.ElasticCas.OpenSearch;
+using Nest;
 
 namespace Terradue.ElasticCas.Services {
 
@@ -27,16 +28,7 @@ namespace Terradue.ElasticCas.Services {
 
         public object Get(OpenSearchQueryRequest request) {
 
-            IElasticDocument document = ElasticCasFactory.GetElasticDocumentByTypeName(request.TypeName);
-
-            if (document == null) {
-                var gdocument = new GenericJson();
-                gdocument.TypeName = request.TypeName;
-                document = gdocument;
-            }
-
-            document.IndexName = request.IndexName;
-            document.ProxyOpenSearchDescription = ecf.GetDefaultOpenSearchDescription(document);
+            IOpenSearchableElasticType type = ecf.GetOpenSearchableElasticTypeByNameOrDefault(request.IndexName, request.TypeName);
 
             NameValueCollection parameters = new NameValueCollection(Request.QueryString);
             if (request.AdditionalParameters != null) {
@@ -45,7 +37,7 @@ namespace Terradue.ElasticCas.Services {
                 }
             }
 
-            return OpenSearchService.Query(document, parameters);
+            return OpenSearchService.Query(type, parameters);
         }
 
         public static void SerializeToStream(IRequestContext requestContext, 

@@ -16,9 +16,10 @@ using Terradue.OpenSearch.Schema;
 using Terradue.ElasticCas.Model;
 using Terradue.OpenSearch.Engine;
 using System.Collections.Specialized;
-using Terradue.ElasticCas.Controller;
+using Terradue.ElasticCas.Controllers;
 using Terradue.ElasticCas.Exceptions;
 using Terradue.ElasticCas.Types;
+using Nest;
 
 namespace Terradue.ElasticCas.Services {
 
@@ -32,17 +33,10 @@ namespace Terradue.ElasticCas.Services {
         [AddHeader(ContentType = "application/opensearchdescription+xml")]
 		public object Get(OpenSearchDescriptionGetRequest request)
 		{
-            IElasticDocument document = ElasticCasFactory.GetElasticDocumentByTypeName(request.TypeName);
 
-            if (document == null) {
-                var gdocument = new GenericJson();
-                gdocument.TypeName = request.TypeName;
-                document = gdocument;
-            }
+            IOpenSearchableElasticType type = ecf.GetOpenSearchableElasticTypeByNameOrDefault(request.IndexName, request.TypeName);
 
-            document.IndexName = request.IndexName;
-
-            OpenSearchDescription osd = ecf.GetDefaultOpenSearchDescription(document);
+            OpenSearchDescription osd = type.GetProxyOpenSearchDescription();
 
             return new HttpResult(osd, "application/opensearchdescription+xml");
 

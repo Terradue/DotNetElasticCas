@@ -25,7 +25,7 @@ namespace Terradue.ElasticCas.Request {
 
 
     [Route("/catalogue/{IndexName}/{TypeName}/{Id}", "GET")]
-    public class TypeGetRequest : IReturn<IElasticDocument> {
+    public class TypeGetRequest : IReturn<IElasticItem> {
         public string IndexName { get; set; }
 
         public string TypeName { get; set; }
@@ -34,7 +34,7 @@ namespace Terradue.ElasticCas.Request {
     }
 
     [Route("/catalogue/{IndexName}/{TypeName}/_import", "POST")]
-    public class TypeImportRequest : IReturn<IElasticDocumentCollection> {
+    public class TypeImportRequest : IReturn<IElasticCollection> {
         public string IndexName { get; set; }
 
         public string TypeName { get; set; }
@@ -42,13 +42,6 @@ namespace Terradue.ElasticCas.Request {
         public string url { get; set; }
 
         public Dictionary<string, object> parameters { get; set; } 
-    }
-
-    [Route("/catalogue/{IndexName}/{TypeName}/_namespaces", "GET")]
-    public class TypeNamespacesRequest : IReturn<NameValueCollection> {
-        public string IndexName { get; set; }
-
-        public string TypeName { get; set; }
     }
 }
 

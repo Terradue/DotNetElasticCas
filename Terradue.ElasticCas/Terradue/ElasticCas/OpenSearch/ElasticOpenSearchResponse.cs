@@ -1,11 +1,11 @@
 ﻿using System;
 using Terradue.OpenSearch.Response;
 using System.IO;
-using Terradue.ElasticCas.Controller;
+using Terradue.ElasticCas.Controllers;
 using Terradue.ElasticCas.Model;
 
 namespace Terradue.ElasticCas.OpenSearch {
-    public class ElasticOpenSearchResponse<T> : OpenSearchResponse where T: class, IElasticDocument, new() {
+    public class ElasticOpenSearchResponse<T> : OpenSearchResponse where T: class, new() {
 
         Nest.ISearchResponse<T> result;
 

@@ -18,14 +18,16 @@ using System.Linq;
 using Terradue.ElasticCas.OpenSearch.Extensions;
 using System.Web;
 using System.IO;
-using Terradue.ElasticCas.Controller;
+using Terradue.ElasticCas.Controllers;
 using System.Xml.Linq;
 using System.Diagnostics;
 using Nest;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Terradue.ElasticCas.Types {
 
-    public class GenericJsonCollection : IElasticDocumentCollection {
+    public class GenericJsonCollection : IElasticCollection {
 
         public GenericJsonCollection() {
 
@@ -47,12 +49,15 @@ namespace Terradue.ElasticCas.Types {
 
         #region IElasticDocumentCollection implementation
 
+        public IEnumerable<IElasticItem> ElasticItems { get { return items; } }
+
         public string IndexName {
             get ;
             set ;
         }
 
         string typeName;
+
         public string TypeName {
             get {
                 return typeName;
@@ -62,37 +67,40 @@ namespace Terradue.ElasticCas.Types {
             }
         }
 
-        public static GenericJsonCollection FromOpenSearchResultCollection(IOpenSearchResultCollection results) {
+        public IElasticCollection FromOpenSearchResultCollection(IOpenSearchResultCollection results) {
+
+            return CreateFromOpenSearchResultCollection(results);
+
+        }
+
+        public static IElasticCollection CreateFromOpenSearchResultCollection(IOpenSearchResultCollection results) {
 
             if (results is GenericJsonCollection)
                 return (GenericJsonCollection)results;
 
             GenericJsonCollection collection = new GenericJsonCollection();
             collection.links = results.Links;
-           
+
             foreach (IOpenSearchResultItem result in results.Items) {
-                var item = GenericJson.FromOpenSearchResultItem(result);
+                var item = GenericJsonItem.FromOpenSearchResultItem(result);
                 collection.items.Add(item);
             }
             return collection;
 
         }
 
-        public Collection<IElasticDocument> CreateFromOpenSearchResultCollection(IOpenSearchResultCollection results) {
-
-            Collection<GenericJson> docs = new Collection<GenericJson>(FromOpenSearchResultCollection(results).items);
-            foreach (var doc in docs) {
-                doc.TypeName = this.TypeName;
-            }
-
-            return new Collection<IElasticDocument>(docs.Cast<IElasticDocument>().ToList());
-
-        }
-
         public void SerializeToStream(System.IO.Stream stream) {
-            JsConfig.ExcludeTypeInfo = true;
-            JsConfig.IncludeTypeInfo = false;
-            JsonSerializer.SerializeToStream(this, stream);
+
+            Dictionary<string, object> col = new Dictionary<string, object>();
+            col.Add("items", items);
+
+            var baseStream = new System.IO.MemoryStream();
+            var serializer = new Newtonsoft.Json.JsonSerializer();
+            var sw = new StreamWriter(stream);
+            var jsonTextWriter = new JsonTextWriter(sw);
+            serializer.Serialize(jsonTextWriter, col);
+            jsonTextWriter.Flush();
+
         }
 
         public string SerializeToString() {
@@ -100,17 +108,20 @@ namespace Terradue.ElasticCas.Types {
             SerializeToStream(ms);
             ms.Seek(0, SeekOrigin.Begin);
             StreamReader sr = new StreamReader(ms);
-            return sr.ReadToEnd();
+            var json = sr.ReadToEnd();
+            return json;
         }
 
         string id;
+
         public string Id {
             get {
                 if (string.IsNullOrEmpty(id) && Links != null && Links.Count > 0) {
                     var link = Links.FirstOrDefault(s => {
                         return s.RelationshipType == "self";
                     });
-                    id = link.Uri.ToString();
+                    if (link != null)
+                        id = link.Uri.ToString();
                 }
                 return id;
             }
@@ -119,24 +130,63 @@ namespace Terradue.ElasticCas.Types {
             }
         }
 
-        internal List <GenericJson> items;
+        public Collection<SyndicationPerson> Contributors {
+            get {
+                throw new NotImplementedException();
+            }
+        }
+
+        public TextSyndicationContent Copyright {
+            get {
+                throw new NotImplementedException();
+            }
+            set {
+                throw new NotImplementedException();
+            }
+        }
+
+        public TextSyndicationContent Description {
+            get {
+                throw new NotImplementedException();
+            }
+            set {
+                throw new NotImplementedException();
+            }
+        }
+
+        public string Generator {
+            get {
+                throw new NotImplementedException();
+            }
+            set {
+                throw new NotImplementedException();
+            }
+        }
+
+        internal List <GenericJsonItem> items;
+
         public IEnumerable<IOpenSearchResultItem> Items {
             get {
                 return items.Cast<IOpenSearchResultItem>().ToArray();
             }
             set {
-                items = value.Cast<GenericJson>().ToList();
+                items = value.Cast<GenericJsonItem>().ToList();
             }
         }
 
         Collection<Terradue.ServiceModel.Syndication.SyndicationLink> links;
+
         public Collection<Terradue.ServiceModel.Syndication.SyndicationLink> Links {
             get {
                 return links;
             }
+            set {
+                links = value;
+            }
         }
 
         Collection<Terradue.ServiceModel.Syndication.SyndicationCategory> categories;
+
         public Collection<Terradue.ServiceModel.Syndication.SyndicationCategory> Categories {
             get {
                 return categories;
@@ -144,6 +194,7 @@ namespace Terradue.ElasticCas.Types {
         }
 
         Collection<Terradue.ServiceModel.Syndication.SyndicationPerson> authors;
+
         public Collection<Terradue.ServiceModel.Syndication.SyndicationPerson> Authors {
             get {
                 return authors;
@@ -151,14 +202,19 @@ namespace Terradue.ElasticCas.Types {
         }
 
         Terradue.ServiceModel.Syndication.SyndicationElementExtensionCollection elementExtensions;
+
         public Terradue.ServiceModel.Syndication.SyndicationElementExtensionCollection ElementExtensions {
             get {
                 return elementExtensions;
             }
+            set {
+                elementExtensions = value;
+            }
         }
 
-        string title;
-        public string Title {
+        TextSyndicationContent title;
+
+        public TextSyndicationContent Title {
             get {
                 return title;
             }
@@ -168,6 +224,7 @@ namespace Terradue.ElasticCas.Types {
         }
 
         DateTime date;
+
         public DateTime Date {
             get {
                 return date;
@@ -178,6 +235,7 @@ namespace Terradue.ElasticCas.Types {
         }
 
         string identifier;
+
         public string Identifier {
             get {
                 return identifier;
@@ -218,15 +276,23 @@ namespace Terradue.ElasticCas.Types {
 
         public static GenericJsonCollection DeserializeFromStream(System.IO.Stream stream) {
 
-            JsonObject json = JsonSerializer.DeserializeFromStream<JsonObject>(stream);
+            var serializer = new Newtonsoft.Json.JsonSerializer();
+            serializer.TypeNameHandling = TypeNameHandling.All;
+            serializer.TypeNameAssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple;
 
-            JsonArrayObjects items = json.Get<JsonArrayObjects>("items");
+            Dictionary<string, object> obj = null;
+            using (var sr = new StreamReader(stream))
+            using (var jsonTextReader = new JsonTextReader(sr)) {
+                obj = serializer.Deserialize<Dictionary<string, object>>(jsonTextReader);
+            }
+
+            JContainer items = (JContainer)obj["items"];
 
             GenericJsonCollection collection = new GenericJsonCollection();
-            collection.items = new List<GenericJson>();
+            collection.items = new List<GenericJsonItem>();
 
             foreach (var item in items) {
-                GenericJson it = new GenericJson(item);
+                GenericJsonItem it = new GenericJsonItem(item.ToObject<Dictionary<string, object>>());
                 collection.items.Add(it);
             }
 
@@ -236,22 +302,21 @@ namespace Terradue.ElasticCas.Types {
 
         public static GenericJsonCollection TransformElasticJsonResponseToGenericCollection(OpenSearchResponse response) {
 
-            if (response is ElasticOpenSearchResponse<GenericJson>) {
-                var results = ((ElasticOpenSearchResponse<GenericJson>)response).GetSearchResponse();
+            if (response is ElasticOpenSearchResponse<GenericJsonItem>) {
+                var results = ((ElasticOpenSearchResponse<GenericJsonItem>)response).GetSearchResponse();
 
                 GenericJsonCollection collection = new GenericJsonCollection();
-                collection.items = new List<GenericJson>();
+                collection.items = new List<GenericJsonItem>();
 
                 foreach (var doc in results.Documents) {
-                    if ( doc is GenericJson) {
-                        collection.items.Add((GenericJson)doc);
-                    }
-                    else
+                    if (doc is GenericJsonItem) {
+                        collection.items.Add((GenericJsonItem)doc);
+                    } else
                         throw new InvalidDataException("Result is not a GenericJson document.");
                 }
                 collection.ShowNamespaces = true;
                 collection.Date = DateTime.UtcNow;
-                collection.ElementExtensions.Add(new XElement(XName.Get("totalResults", "http://a9.com/-/spec/opensearch/1.1/"), ((ElasticOpenSearchResponse<GenericJson>)response).TotalResult).CreateReader());
+                collection.ElementExtensions.Add(new XElement(XName.Get("totalResults", "http://a9.com/-/spec/opensearch/1.1/"), ((ElasticOpenSearchResponse<GenericJsonItem>)response).TotalResult).CreateReader());
 
                 return collection;
 
