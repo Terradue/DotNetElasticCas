@@ -5,7 +5,7 @@ using Terradue.ElasticCas.Request;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.Common.Web;
-using Terradue.ElasticCas.Controller;
+using Terradue.ElasticCas.Controllers;
 using Terradue.ElasticCas.Types;
 using Terradue.OpenSearch.Engine;
 using System.Collections.Specialized;
@@ -30,16 +30,9 @@ namespace Terradue.ElasticCas.Services {
         [AddHeader(ContentType = ContentType.Json)]
         public IEnumerable<BulkOperationResponseItem> Post(IngestionRequest request) {
 
+            IOpenSearchableElasticType type = ecf.GetOpenSearchableElasticTypeByNameOrDefault(request.IndexName, request.TypeName);
 
-            IElasticDocument document = ElasticCasFactory.GetElasticDocumentByTypeName(request.TypeName);
-
-            if (document == null) {
-                var gdocument = new GenericJson();
-                gdocument.TypeName = request.TypeName;
-                document = gdocument;
-            }
-
-            OpenSearchEngine ose = document.GetOpenSearchEngine(new NameValueCollection());
+            OpenSearchEngine ose = type.GetOpenSearchEngine(new NameValueCollection());
 
             IOpenSearchEngineExtension osee = ose.GetExtensionByContentTypeAbility(Request.ContentType);
             if (osee == null)
@@ -52,7 +45,7 @@ namespace Terradue.ElasticCas.Services {
             OpenSearchFactory.RemoveLinksByRel(ref results, "self");
             OpenSearchFactory.RemoveLinksByRel(ref results, "search");
 
-            Collection<IElasticDocument> docs = document.GetContainer().CreateFromOpenSearchResultCollection(results);
+            IElasticCollection docs = type.FromOpenSearchResultCollection(results);
 
             BulkRequest bulkRequest = new BulkRequest() {
                 Refresh = true,
@@ -65,20 +58,18 @@ namespace Terradue.ElasticCas.Services {
             RootObjectMapping currentMapping = null;
 
             try { 
-                var mappingResponse = client.GetMapping<IElasticDocument>(g => g.Index(request.IndexName).Type(request.TypeName));
+                var mappingResponse = client.GetMapping<IElasticType>(g => g.Index(request.IndexName).Type(request.TypeName));
                 currentMapping = mappingResponse.Mapping;
-            } catch ( Exception e ) {}
+            } catch ( Exception ) {}
 
-            RootObjectMapping typeMapping = document.GetMapping();
+            var rootObjectMapping = type.GetRootMapping();
 
-            if (!typeMapping.Equals(currentMapping)) {
-                IPutMappingRequest putMapping = new PutMappingRequest(request.IndexName, request.TypeName);
-                putMapping.Mapping = typeMapping;
-                client.Map(putMapping);
+            if (!rootObjectMapping.Equals(currentMapping)) {
+                client.Map<IElasticType>(m => m.Index(request.IndexName).Type(request.TypeName));
             }
 
-            foreach (var doc in docs) {
-                var bulkIndexOperation = new BulkIndexOperation<IElasticDocument>(doc);
+            foreach (var doc in docs.ElasticItems) {
+                var bulkIndexOperation = new BulkIndexOperation<IElasticItem>(doc);
                 bulkIndexOperation.Id = ((IOpenSearchResultItem)doc).Identifier;
                 bulkIndexOperation.Type = request.TypeName;
                 var bulkOp = bulkIndexOperation;
@@ -101,13 +92,7 @@ namespace Terradue.ElasticCas.Services {
 
             IOpenSearchable entity = new GenericOpenSearchable(url, ose);
 
-            IElasticDocument document = ElasticCasFactory.GetElasticDocumentByTypeName(request.TypeName);
-
-            if (document == null) {
-                var gdocument = new GenericJson();
-                gdocument.TypeName = request.TypeName;
-                document = gdocument;
-            }
+            IOpenSearchableElasticType type = ecf.GetOpenSearchableElasticTypeByNameOrDefault(request.IndexName, request.TypeName);
 
             IOpenSearchResult osres = ose.Query(entity, new NameValueCollection());
             OpenSearchFactory.RemoveLinksByRel(ref osres, "alternate");
@@ -115,7 +100,7 @@ namespace Terradue.ElasticCas.Services {
             OpenSearchFactory.RemoveLinksByRel(ref osres, "self");
             OpenSearchFactory.RemoveLinksByRel(ref osres, "search");
 
-            Collection<IElasticDocument> documents = document.GetContainer().CreateFromOpenSearchResultCollection(osres.Result);
+            IElasticCollection documents = type.FromOpenSearchResultCollection(osres.Result);
 
             BulkRequest bulkRequest = new BulkRequest() {
                 Refresh = true,
@@ -123,8 +108,8 @@ namespace Terradue.ElasticCas.Services {
                 Index = request.IndexName
             };
 
-            foreach (var doc in documents) {
-                bulkRequest.Operations.Add(new BulkIndexOperation<IElasticDocument>(doc) { Id = doc.Id });
+            foreach (var doc in documents.Items) {
+                bulkRequest.Operations.Add(new BulkIndexOperation<IElasticItem>((IElasticItem)doc) { Id = doc.Id });
             }
 
             var response = client.Bulk(bulkRequest);
@@ -152,18 +137,6 @@ namespace Terradue.ElasticCas.Services {
             return result;
         }
 
-        public object Get(TypeNamespacesRequest request) {
-
-            IElasticDocument document = ElasticCasFactory.GetElasticDocumentByTypeName(request.TypeName);
-
-            if (document == null) {
-                var gdocument = new GenericJson();
-                gdocument.TypeName = request.TypeName;
-                document = gdocument;
-            }
-                
-            return document.GetTypeNamespaces();
-        }
     }
 }
 

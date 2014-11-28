@@ -1,0 +1,246 @@
+﻿using System;
+using Terradue.ElasticCas.Model;
+using Terradue.OpenSearch.Result;
+using System.Collections.Specialized;
+using System.Collections.ObjectModel;
+using Terradue.ServiceModel.Syndication;
+using Mono.Addins;
+using System.Runtime.Serialization;
+using System.Collections.Generic;
+using Terradue.ElasticCas.OpenSearch;
+using System.Diagnostics;
+using Nest;
+using Newtonsoft.Json;
+using Nest.Resolvers.Converters;
+using Terradue.ElasticCas.Controllers;
+using Newtonsoft.Json.Linq;
+using Terradue.OpenSearch.Request;
+using Terradue.OpenSearch.Schema;
+using Terradue.OpenSearch.Engine;
+using Terradue.OpenSearch;
+using System.Linq;
+using Terradue.ElasticCas.OpenSearch.Extensions;
+using System.Web;
+using System.Xml;
+
+
+namespace Terradue.ElasticCas.Types {
+
+
+    [DataContract]
+    [JsonConverter(typeof(ElasticJsonTypeConverter))]
+    public class GenericJsonItem : IElasticItem {
+    
+        Dictionary<string, object> payload;
+
+        public GenericJsonItem() {
+            this.payload = new Dictionary<string, object>();
+            Date = DateTime.UtcNow;
+            links = new Collection<SyndicationLink>();
+        }
+
+        public GenericJsonItem(Dictionary<string, object> item) : this() {
+        
+            foreach (string ext in item.Keys) {
+                if ( payload.ContainsKey(ext) )
+                    payload.Remove(ext);
+
+                payload.Add(ext, item[ext]);
+
+            }
+        }
+
+        public new static GenericJsonItem FromOpenSearchResultItem(IOpenSearchResultItem result) {
+            if (result is GenericJsonItem)
+                return (GenericJsonItem)result;
+
+            GenericJsonItem item = new GenericJsonItem();
+
+            item.Identifier = result.Identifier;
+            item.Date = result.Date;
+
+            foreach (SyndicationElementExtension ext in result.ElementExtensions) {
+                XmlDocument doc = new XmlDocument();
+                doc.Load(ext.GetReader());
+                var obj = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeXmlNode(doc, Newtonsoft.Json.Formatting.None, false));
+
+                item.payload.Add(ext.OuterName, obj[ext.OuterName]);
+            }
+
+            return item;
+        }
+
+        public string ToJson(GenericJsonItem gj) {
+
+            return JsonConvert.SerializeObject(gj.payload);
+
+        }
+
+        #region IElasticItem implementation
+
+        string id;
+
+        public string Id {
+            get {
+                if (string.IsNullOrEmpty(id) && Links != null && Links.Count > 0) {
+                    var link = Links.FirstOrDefault(s => {
+                        return s.RelationshipType == "self";
+                    });
+                    if (link != null)
+                        id = link.Uri.ToString();
+                }
+                return id;
+            }
+            set {
+                id = value;
+            }
+        }
+
+        public IQueryContainer BuildQuery(System.Collections.Specialized.NameValueCollection nvc) {
+
+            IQueryContainer query = new QueryContainer();
+
+            if (string.IsNullOrEmpty(nvc["q"])) {
+                query.MatchAllQuery = new MatchAllQuery();
+            } else {
+                query.QueryString = new QueryStringQuery();
+                query.QueryString.Query = nvc["q"];
+            }
+
+            return query;
+
+        }
+
+        public NameValueCollection GetTypeNamespaces() {
+            return DefaultNamespaces.TypeNamespaces;
+        }
+
+        public TextSyndicationContent Title {
+            get {
+                if (payload.ContainsKey("title"))
+                    return new TextSyndicationContent((string)payload["title"]);
+                return null;
+            }
+            set {
+                payload["title"] = value.Text;
+            }
+        }
+
+        public DateTime Date {
+            get {
+                if (payload.ContainsKey("date"))
+                    return (DateTime)payload["date"];
+                return DateTime.UtcNow;
+            }
+            set {
+                payload["date"] = value;
+            }
+        }
+
+        public string Identifier {
+            get {
+                if (!payload.ContainsKey("identifier") || string.IsNullOrEmpty((string)payload["identifier"])) {
+                    payload["identifier"] = Guid.NewGuid().ToString();
+                }
+                return (string)payload["identifier"];
+            }
+            set {
+                payload["identifier"] = value;
+            }
+        }
+
+        public TextSyndicationContent Summary {
+            get {
+                throw new NotImplementedException();
+            }
+            set {
+                throw new NotImplementedException();
+            }
+        }
+
+        public Collection<SyndicationPerson> Contributors {
+            get {
+                throw new NotImplementedException();
+            }
+        }
+
+        public TextSyndicationContent Copyright {
+            get {
+                throw new NotImplementedException();
+            }
+            set {
+                throw new NotImplementedException();
+            }
+        }
+
+        Collection<SyndicationLink> links;
+        public Collection<SyndicationLink> Links {
+            get {
+                return links;
+
+            }
+            set {
+                links = value;
+            }
+        }
+
+        Collection<SyndicationCategory> categories;
+
+        public Collection<SyndicationCategory> Categories {
+            get {
+                return categories;
+            }
+        }
+
+        Collection<SyndicationPerson> authors;
+
+        public Collection<SyndicationPerson> Authors {
+            get {
+                return authors;
+            }
+        }
+
+
+        public SyndicationElementExtensionCollection ElementExtensions {
+            get {
+                var elements = payload.Select<KeyValuePair<string, object>, SyndicationElementExtension>(p => {
+                    if (p.Key == "identifier" || p.Key == "date")
+                        return null;
+                    Dictionary<string, object> dic = new Dictionary<string, object>();
+                    dic.Add(p.Key, p.Value);
+                    string json = JsonConvert.SerializeObject(dic);
+                    return new SyndicationElementExtension(JsonConvert.DeserializeXNode(json).CreateReader());
+                }).Where(y => y != null);
+                return new SyndicationElementExtensionCollection(elements);
+            }
+            set {
+                throw new NotImplementedException();
+            }
+        }
+
+        bool showNamespaces;
+
+        public bool ShowNamespaces {
+            get {
+                return showNamespaces;
+            }
+            set {
+                showNamespaces = value;
+            }
+        }
+
+        public TypeNameMarker TypeName { get; set; }
+
+        public IElasticItem ReadElasticJson(JsonReader reader, Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer) {
+
+            return new GenericJsonItem(serializer.Deserialize<Dictionary<string, object>>(reader));
+        }
+
+        public void WriteElasticJson(JsonWriter writer, Newtonsoft.Json.JsonSerializer serializer) {
+            serializer.Serialize(writer, payload);
+        }
+        #endregion
+       
+    }
+}
+

@@ -10,27 +10,28 @@ using Terradue.ServiceModel.Syndication;
 using System.Collections.ObjectModel;
 using Terradue.OpenSearch.Result;
 using Terradue.OpenSearch.Schema;
+using Nest;
 
 namespace Terradue.ElasticCas.OpenSearch {
     public class OpenSearchService {
 
-        public static IOpenSearchResult QueryResult(IElasticDocument document, NameValueCollection parameters) {
+        public static IOpenSearchResult QueryResult(IOpenSearchableElasticType type, NameValueCollection parameters) {
 
-            OpenSearchEngine ose = document.GetOpenSearchEngine(parameters);
+            OpenSearchEngine ose = type.GetOpenSearchEngine(parameters);
 
-            Type type = OpenSearchFactory.ResolveTypeFromRequest(HttpContext.Current.Request, ose);
+            Type resultType = OpenSearchFactory.ResolveTypeFromRequest(HttpContext.Current.Request, ose);
 
-            var result = ose.Query(document, parameters, type );
+            var result = ose.Query(type, parameters, resultType );
 
-            OpenSearchFactory.ReplaceSelfLinks(document, parameters, result.Result, document.EntrySelfLinkTemplate, result.Result.ContentType);   
-            OpenSearchFactory.ReplaceOpenSearchDescriptionLinks(document, result.Result);
+            OpenSearchFactory.ReplaceSelfLinks(type, parameters, result.Result, type.EntrySelfLinkTemplate, result.Result.ContentType);   
+            OpenSearchFactory.ReplaceOpenSearchDescriptionLinks(type, result.Result);
 
-            result.Result.Title = string.Format("Result for OpenSearch query over type {0} in index {1}", document.TypeName, document.IndexName);
+            result.Result.Title = new TextSyndicationContent(string.Format("Result for OpenSearch query over type {0} in index {1}", type.Type.Name, type.Index.Name));
 
             return result;
         }
 
-        public static HttpResult Query(IElasticDocument document, NameValueCollection parameters) {
+        public static HttpResult Query(IOpenSearchableElasticType document, NameValueCollection parameters) {
 
             // special case for description
             if (HttpContext.Current.Request.AcceptTypes != null && HttpContext.Current.Request.AcceptTypes[0] == "application/opensearchdescription+xml" || parameters["format"] == "description") {

@@ -3,7 +3,7 @@ using ServiceStack;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceHost;
 using log4net;
-using Terradue.ElasticCas.Controller;
+using Terradue.ElasticCas.Controllers;
 
 namespace Terradue.ElasticCas.Services {
     public class BaseService : ServiceStack.ServiceInterface.Service {

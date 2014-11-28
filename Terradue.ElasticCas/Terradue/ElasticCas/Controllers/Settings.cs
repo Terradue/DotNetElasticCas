@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Configuration;
 
-namespace Terradue.ElasticCas.Controller {
+namespace Terradue.ElasticCas.Controllers {
     public class Settings {
         public static string Alias
         {
