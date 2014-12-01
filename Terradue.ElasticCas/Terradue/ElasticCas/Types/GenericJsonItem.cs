@@ -149,12 +149,13 @@ namespace Terradue.ElasticCas.Types {
             }
         }
 
+        TextSyndicationContent summary;
         public TextSyndicationContent Summary {
             get {
-                throw new NotImplementedException();
+                return summary;
             }
             set {
-                throw new NotImplementedException();
+                summary = value;
             }
         }
 
@@ -164,12 +165,13 @@ namespace Terradue.ElasticCas.Types {
             }
         }
 
+        TextSyndicationContent copyright;
         public TextSyndicationContent Copyright {
             get {
-                throw new NotImplementedException();
+                return copyright;
             }
             set {
-                throw new NotImplementedException();
+                copyright = value;
             }
         }
 
@@ -200,6 +202,15 @@ namespace Terradue.ElasticCas.Types {
             }
         }
 
+        SyndicationContent content;
+        public SyndicationContent Content {
+            get {
+                return content;
+            }
+            set {
+                content = value;
+            }
+        }
 
         public SyndicationElementExtensionCollection ElementExtensions {
             get {
