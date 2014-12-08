@@ -21,6 +21,10 @@ namespace Terradue.ElasticCas.OpenSearch {
 
             Type resultType = OpenSearchFactory.ResolveTypeFromRequest(HttpContext.Current.Request, ose);
 
+            if ( resultType == typeof(ParametersResult) ){
+                return new OpenSearchResult(type.DescribeParameters(), parameters);
+            }
+
             var result = ose.Query(type, parameters, resultType );
 
             OpenSearchFactory.ReplaceSelfLinks(type, parameters, result.Result, type.EntrySelfLinkTemplate, result.Result.ContentType);   

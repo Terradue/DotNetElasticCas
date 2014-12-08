@@ -90,6 +90,13 @@ namespace Terradue.ElasticCas.Types {
 
         }
 
+
+        public ParametersResult DescribeParameters() {
+
+            return OpenSearchFactory.GetDefaultParametersResult();
+
+
+        }
         #endregion
 
         #region IProxiedOpenSearchable implementation
