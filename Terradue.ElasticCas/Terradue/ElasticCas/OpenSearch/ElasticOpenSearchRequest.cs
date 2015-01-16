@@ -11,9 +11,10 @@ using Terradue.OpenSearch.Engine;
 using System.Diagnostics;
 using Nest;
 using Terradue.ElasticCas.Types;
+using Newtonsoft.Json;
 
 namespace Terradue.ElasticCas.OpenSearch {
-    public class ElasticOpenSearchRequest<T> : OpenSearchRequest where T: class, new() {
+    public class ElasticOpenSearchRequest<T> : OpenSearchRequest where T: class, IElasticItem, new() {
 
         string indexName;
         string typeName;
@@ -93,7 +94,7 @@ namespace Terradue.ElasticCas.OpenSearch {
 
         #region implemented abstract members of OpenSearchRequest
 
-        public override OpenSearchResponse GetResponse() {
+        public override IOpenSearchResponse GetResponse() {
 
             var response = client.Search<T>(DescribeSearch);
             return new ElasticOpenSearchResponse<T>(response);

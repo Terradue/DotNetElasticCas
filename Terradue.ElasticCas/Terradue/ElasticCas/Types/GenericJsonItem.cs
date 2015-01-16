@@ -26,7 +26,7 @@ using System.Xml;
 
 namespace Terradue.ElasticCas.Types {
 
-
+    [Serializable]
     [DataContract]
     [JsonConverter(typeof(ElasticJsonTypeConverter))]
     public class GenericJsonItem : IElasticItem {
@@ -37,6 +37,9 @@ namespace Terradue.ElasticCas.Types {
             this.payload = new Dictionary<string, object>();
             Date = DateTime.UtcNow;
             links = new Collection<SyndicationLink>();
+            authors = new Collection<SyndicationPerson>();
+            categories = new Collection<SyndicationCategory>();
+            contributors = new Collection<SyndicationPerson>();
         }
 
         public GenericJsonItem(Dictionary<string, object> item) : this() {
@@ -159,9 +162,10 @@ namespace Terradue.ElasticCas.Types {
             }
         }
 
+        readonly Collection<SyndicationPerson> contributors;
         public Collection<SyndicationPerson> Contributors {
             get {
-                throw new NotImplementedException();
+                return contributors;
             }
         }
 

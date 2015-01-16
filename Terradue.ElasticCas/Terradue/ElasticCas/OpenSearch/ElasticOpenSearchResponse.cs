@@ -3,32 +3,29 @@ using Terradue.OpenSearch.Response;
 using System.IO;
 using Terradue.ElasticCas.Controllers;
 using Terradue.ElasticCas.Model;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json.Serialization;
+using Nest;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
 
 namespace Terradue.ElasticCas.OpenSearch {
-    public class ElasticOpenSearchResponse<T> : OpenSearchResponse where T: class, new() {
+    public class ElasticOpenSearchResponse<TResult> : OpenSearchResponse<ISearchResponse<TResult>> where TResult: class, IElasticItem, new() {
 
-        Nest.ISearchResponse<T> result;
+        ISearchResponse<TResult> response;
 
-        public ElasticOpenSearchResponse(Nest.ISearchResponse<T> result) {
-            this.result = result;
+        public ElasticOpenSearchResponse(ISearchResponse<TResult> response) {
+            this.response = response;
         }
 
         #region implemented abstract members of OpenSearchResponse
 
-        public override System.IO.Stream GetResponseStream() {
+        public override object GetResponseObject() {
 
-            MemoryStream ms = new MemoryStream();
+            return response;
 
-            StreamWriter sw = new StreamWriter(ms);
-
-            sw.Write(result.RequestInformation.ResponseRaw);
-
-            sw.Flush();
-            sw.Close();
-
-            ms.Seek(0, SeekOrigin.Begin);
-
-            return ms;
         }
 
         public override string ContentType {
@@ -39,22 +36,23 @@ namespace Terradue.ElasticCas.OpenSearch {
 
         public override TimeSpan RequestTime {
             get {
-                return new TimeSpan(0,0,0,0,result.ElapsedMilliseconds);
+                return new TimeSpan(0,0,0,0,GetResults().ElapsedMilliseconds);
             }
         }
 
         #endregion
 
-        public long TotalResult {
-            get {
-                return result.Total;
-            }
+        public ISearchResponse<TResult> GetResults()
+        {
+            //StreamReader sr = new StreamReader(response);
+            //string str = sr.ReadToEnd();
+            //SearchResponse<T> res = JsonConvert.DeserializeObject<SearchResponse<T>>(str);
+
+            return response;
         }
 
-        public Nest.ISearchResponse<T> GetSearchResponse()
-        {
-            return result;
-        }
+
     }
+
 }
 

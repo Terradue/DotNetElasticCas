@@ -11,13 +11,22 @@ using System.Collections.ObjectModel;
 using Terradue.OpenSearch.Result;
 using Terradue.OpenSearch.Schema;
 using Nest;
+using Terradue.OpenSearch.Filters;
 
 namespace Terradue.ElasticCas.OpenSearch {
-    public class OpenSearchService {
+    public static class OpenSearchService {
 
         public static IOpenSearchResult QueryResult(IOpenSearchableElasticType type, NameValueCollection parameters) {
 
             OpenSearchEngine ose = type.GetOpenSearchEngine(parameters);
+
+            NameValueCollection cacheSettings = new NameValueCollection();
+            cacheSettings.Add("SlidingExpiration", "600");
+
+            if (AppHost.searchCache == null)
+                AppHost.searchCache = new OpenSearchMemoryCache("cache", cacheSettings);
+            ose.RegisterPreSearchFilter(AppHost.searchCache.TryReplaceWithCacheRequest);
+            ose.RegisterPostSearchFilter(AppHost.searchCache.CacheResponse);
 
             Type resultType = OpenSearchFactory.ResolveTypeFromRequest(HttpContext.Current.Request, ose);
 

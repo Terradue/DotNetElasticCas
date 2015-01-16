@@ -10,7 +10,8 @@ namespace Terradue.ElasticCas.Controllers {
         private static ConnectionSettings _connectionsettings = 
             new ConnectionSettings(new Uri(_connectionString))
                 .SetDefaultIndex(Settings.Alias)
-                .ThrowOnElasticsearchServerExceptions();
+                .ThrowOnElasticsearchServerExceptions()
+                .ExposeRawResponse();
 
         public ElasticClientWrapper() : base(_connectionsettings) {
 

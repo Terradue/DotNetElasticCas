@@ -25,9 +25,12 @@ using log4net;
 using Terradue.ServiceModel.Syndication;
 using Terradue.ElasticCas.Controllers;
 using Terradue.ElasticCas.Types;
+using Terradue.OpenSearch.Filters;
 
 namespace Terradue.ElasticCas {
     public class AppHost : AppHostBase {
+
+        internal static OpenSearchMemoryCache searchCache;
 
         public System.Configuration.Configuration WebConfig;
         public readonly ILog Logger; 
