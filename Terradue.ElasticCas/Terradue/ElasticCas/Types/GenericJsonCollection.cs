@@ -300,30 +300,32 @@ namespace Terradue.ElasticCas.Types {
 
         }
 
-        public static GenericJsonCollection TransformElasticJsonResponseToGenericCollection(OpenSearchResponse response) {
+        public static GenericJsonCollection TransformElasticSearchResponseToGenericJsonCollection(OpenSearchResponse<ISearchResponse<GenericJsonItem>> response) {
 
-            if (response is ElasticOpenSearchResponse<GenericJsonItem>) {
-                var results = ((ElasticOpenSearchResponse<GenericJsonItem>)response).GetSearchResponse();
+            ISearchResponse<GenericJsonItem> results = null;
 
-                GenericJsonCollection collection = new GenericJsonCollection();
-                collection.items = new List<GenericJsonItem>();
+            results = (ISearchResponse<GenericJsonItem>)response.GetResponseObject();
 
-                foreach (var doc in results.Documents) {
-                    if (doc is GenericJsonItem) {
-                        collection.items.Add((GenericJsonItem)doc);
-                    } else
-                        throw new InvalidDataException("Result is not a GenericJson document.");
-                }
-                collection.ShowNamespaces = true;
-                collection.Date = DateTime.UtcNow;
-                collection.ElementExtensions.Add(new XElement(XName.Get("totalResults", "http://a9.com/-/spec/opensearch/1.1/"), ((ElasticOpenSearchResponse<GenericJsonItem>)response).TotalResult).CreateReader());
-
-                return collection;
-
-
-            } else {
+            if (results == null) {
                 throw new NotImplementedException("GenericCollection only transforms from an ElasticOpenSearchResponse");
             }
+
+            GenericJsonCollection collection = new GenericJsonCollection();
+            collection.items = new List<GenericJsonItem>();
+
+            foreach (var doc in results.Documents) {
+                if (doc is GenericJsonItem) {
+                    collection.items.Add(doc);
+                } else
+                    throw new InvalidDataException("Result is not a GenericJson document.");
+            }
+            collection.ShowNamespaces = true;
+            collection.Date = DateTime.UtcNow;
+            collection.ElementExtensions.Add(new XElement(XName.Get("totalResults", "http://a9.com/-/spec/opensearch/1.1/"), results.Total).CreateReader());
+
+            return collection;
+
+
         }
     }
 }

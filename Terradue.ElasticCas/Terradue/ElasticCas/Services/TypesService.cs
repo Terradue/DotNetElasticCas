@@ -28,7 +28,7 @@ namespace Terradue.ElasticCas.Services {
         }
 
         [AddHeader(ContentType = ContentType.Json)]
-        public IEnumerable<BulkOperationResponseItem> Post(IngestionRequest request) {
+        public HttpResult Post(IngestionRequest request) {
 
             IOpenSearchableElasticType type = ecf.GetOpenSearchableElasticTypeByNameOrDefault(request.IndexName, request.TypeName);
 
@@ -78,7 +78,20 @@ namespace Terradue.ElasticCas.Services {
 
             var response = client.Bulk(bulkRequest);
 
-            return response.Items;
+            IngestionResponse ingestionResponse = new IngestionResponse();
+            foreach (var item in response.Items) {
+                if (!item.IsValid) {
+                    ingestionResponse.Errors++;
+                    continue;
+                }
+                if (item.Version == "1")
+                    ingestionResponse.Added++;
+                else
+                    ingestionResponse.Updated++;
+
+            }
+
+            return new HttpResult(ingestionResponse, "application/json");
         }
 
         [AddHeader(ContentType = ContentType.Json)]

@@ -110,7 +110,7 @@ namespace Terradue.ElasticCas.Types {
         #region IOpenSearchable implementation
 
         public QuerySettings GetQuerySettings(OpenSearchEngine ose) {
-            return new QuerySettings(this.DefaultMimeType, GenericJsonCollection.TransformElasticJsonResponseToGenericCollection);
+            return new QuerySettings(this.DefaultMimeType, new GenericJsonOpenSearchEngineExtension().ReadNative);
         }
 
         public Terradue.OpenSearch.Request.OpenSearchRequest Create(string mimetype, System.Collections.Specialized.NameValueCollection parameters) {

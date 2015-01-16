@@ -4,6 +4,8 @@ using Terradue.OpenSearch.Result;
 using Terradue.OpenSearch.Response;
 using Terradue.OpenSearch;
 using Terradue.ElasticCas.Types;
+using System.IO;
+using Nest;
 
 namespace Terradue.ElasticCas.OpenSearch.Extensions {
     public class GenericJsonOpenSearchEngineExtension : OpenSearchEngineExtension<GenericJsonCollection> {
@@ -29,11 +31,16 @@ namespace Terradue.ElasticCas.OpenSearch.Extensions {
             return typeof(GenericJsonOpenSearchable);
         }
 
-        public override IOpenSearchResultCollection ReadNative(OpenSearchResponse response) {
-            if (response.ContentType == "application/json")
-                return TransformJsonResponseToGenericJsonCollection(response);
-
-            throw new NotSupportedException("Generic Json extension does not transform OpenSearch response of contentType " + response.ContentType);
+        public override IOpenSearchResultCollection ReadNative(IOpenSearchResponse response) {
+            if (response.ObjectType == typeof(byte[])) {
+                if (response.ContentType == "application/json")
+                    return TransformJsonResponseToGenericJsonCollection((OpenSearchResponse<byte[]>)response);
+                throw new NotSupportedException("Generic Json extension does not transform OpenSearch response of contentType " + response.ContentType);
+            }
+            if (response.ObjectType == typeof(ISearchResponse<GenericJsonItem>)) {
+                return GenericJsonCollection.TransformElasticSearchResponseToGenericJsonCollection((OpenSearchResponse<ISearchResponse<GenericJsonItem>>)response);
+            }
+            throw new InvalidOperationException("Generic Json extension does not transform OpenSearch response of type " + response.ObjectType);
         }
 
         public override string DiscoveryContentType {
@@ -42,7 +49,7 @@ namespace Terradue.ElasticCas.OpenSearch.Extensions {
             }
         }
 
-        public override OpenSearchUrl FindOpenSearchDescriptionUrlFromResponse(OpenSearchResponse response) {
+        public override OpenSearchUrl FindOpenSearchDescriptionUrlFromResponse(IOpenSearchResponse response) {
 
             if (response.ContentType == "application/json") {
                 // TODO
@@ -61,9 +68,9 @@ namespace Terradue.ElasticCas.OpenSearch.Extensions {
 
         #endregion
 
-        public static GenericJsonCollection TransformJsonResponseToGenericJsonCollection(OpenSearchResponse response) {
+        public static GenericJsonCollection TransformJsonResponseToGenericJsonCollection(OpenSearchResponse<byte[]> response) {
 
-            return (GenericJsonCollection)GenericJsonCollection.DeserializeFromStream(response.GetResponseStream());
+            return (GenericJsonCollection)GenericJsonCollection.DeserializeFromStream(new MemoryStream((byte[])response.GetResponseObject()));
 
         }
 
