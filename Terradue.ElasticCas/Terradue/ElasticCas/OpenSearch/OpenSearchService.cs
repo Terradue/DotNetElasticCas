@@ -16,7 +16,7 @@ using Terradue.OpenSearch.Filters;
 namespace Terradue.ElasticCas.OpenSearch {
     public static class OpenSearchService {
 
-        public static IOpenSearchResult QueryResult(IOpenSearchableElasticType type, NameValueCollection parameters) {
+        public static IOpenSearchResult QueryResult(IOpenSearchableElasticType type, NameValueCollection parameters, Type resultType = null) {
 
             OpenSearchEngine ose = type.GetOpenSearchEngine(parameters);
 
@@ -28,7 +28,8 @@ namespace Terradue.ElasticCas.OpenSearch {
             ose.RegisterPreSearchFilter(AppHost.searchCache.TryReplaceWithCacheRequest);
             ose.RegisterPostSearchFilter(AppHost.searchCache.CacheResponse);
 
-            Type resultType = OpenSearchFactory.ResolveTypeFromRequest(HttpContext.Current.Request, ose);
+            if ( resultType == null )
+                resultType = OpenSearchFactory.ResolveTypeFromRequest(HttpContext.Current.Request, ose);
 
             if ( resultType == typeof(ParametersResult) ){
                 return new OpenSearchResult(type.DescribeParameters(), parameters);
@@ -44,14 +45,14 @@ namespace Terradue.ElasticCas.OpenSearch {
             return result;
         }
 
-        public static HttpResult Query(IOpenSearchableElasticType document, NameValueCollection parameters) {
+        public static HttpResult Query(IOpenSearchableElasticType document, NameValueCollection parameters, Type resultType = null) {
 
             // special case for description
             if (HttpContext.Current.Request.AcceptTypes != null && HttpContext.Current.Request.AcceptTypes[0] == "application/opensearchdescription+xml" || parameters["format"] == "description") {
                 return new HttpResult(document.GetProxyOpenSearchDescription(), "application/opensearchdescription+xml");
             }
 
-            var result = QueryResult(document, parameters);
+            var result = QueryResult(document, parameters, resultType);
 
             return new HttpResult(result.Result.SerializeToString(), result.Result.ContentType);
         }
