@@ -71,7 +71,7 @@ namespace Terradue.ElasticCas.Controllers {
             var status = client.Status(s => s.Index(createRequest.IndexName));
             indexInformation.Name = createRequest.IndexName;
             indexInformation.Shards = status.Shards;
-            indexInformation.Mappings = new List<RootObjectMapping>();
+            indexInformation.Mappings = new Dictionary<string, ICollection<PropertyNameMarker>>();
 
             // Init mappings for each types declared
             if (createRequest.TypeNames == null || createRequest.TypeNames.Length == 0) {
@@ -88,7 +88,7 @@ namespace Terradue.ElasticCas.Controllers {
 
                     client.Map(putMappingRequest);
 
-                    indexInformation.Mappings.Add(((IPutMappingRequest)putMappingRequest).Mapping);
+                    indexInformation.Mappings.Add(type.Identifier, ((IPutMappingRequest)putMappingRequest).Mapping.Properties.Keys);
 
                     typeNames.Add(type.Type.Name);
                 }
@@ -105,7 +105,7 @@ namespace Terradue.ElasticCas.Controllers {
 
                             client.Map(putMappingRequest);
 
-                            indexInformation.Mappings.Add(((IPutMappingRequest)putMappingRequest).Mapping);
+                            indexInformation.Mappings.Add(type.Identifier, ((IPutMappingRequest)putMappingRequest).Mapping.Properties.Keys);
 
                         }
                     }
@@ -189,7 +189,8 @@ namespace Terradue.ElasticCas.Controllers {
             foreach (int code in searchExtensions.Keys) {
 
                 queryString.Set("format", searchExtensions[code].Identifier);
-                searchUrl.Query = queryString.ToString();
+                string[] queryStrings = Array.ConvertAll(parameters.AllKeys, key => string.Format("{1}={{{0}?}}", key, parameters[key]));
+                searchUrl.Query = string.Join("&", queryStrings);
                 urls.Add(new OpenSearchDescriptionUrl(searchExtensions[code].DiscoveryContentType, 
                                                       searchUrl.ToString(),
                                                       "results"));
