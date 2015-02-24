@@ -10,7 +10,7 @@ namespace Terradue.ElasticCas.Responses {
 
         public ShardsMetaData Shards { get; set; }
 
-        public List<RootObjectMapping> Mappings { get; set; }
+        public Dictionary<string,ICollection<PropertyNameMarker>> Mappings { get; set; }
 
     }
 }
