@@ -32,13 +32,21 @@ namespace Terradue.ElasticCas.Services {
 
             IOpenSearchableElasticType type = ecf.GetOpenSearchableElasticTypeByNameOrDefault(request.IndexName, request.TypeName);
 
+            var response = Ingest(type, Request);
+
+            return new HttpResult(response, "application/json");
+
+        }
+
+        public IngestionResponse Ingest(IOpenSearchableElasticType type, IHttpRequest request) {
+
             OpenSearchEngine ose = type.GetOpenSearchEngine(new NameValueCollection());
 
-            IOpenSearchEngineExtension osee = ose.GetExtensionByContentTypeAbility(Request.ContentType);
+            IOpenSearchEngineExtension osee = ose.GetExtensionByContentTypeAbility(request.ContentType);
             if (osee == null)
                 throw new NotImplementedException(string.Format("No OpenSearch extension found for reading {0}", Request.ContentType));
 
-            MemoryOpenSearchResponse payload = new MemoryOpenSearchResponse(Request.GetRawBody(), Request.ContentType);
+            MemoryOpenSearchResponse payload = new MemoryOpenSearchResponse(request.GetRawBody(), request.ContentType);
 
             IOpenSearchResultCollection results = osee.ReadNative(payload);
 
@@ -50,28 +58,29 @@ namespace Terradue.ElasticCas.Services {
             BulkRequest bulkRequest = new BulkRequest() {
                 Refresh = true,
                 Consistency = Consistency.One,
-                Index = request.IndexName,
-                Type = request.TypeName,
+                Index = type.Index,
+                Type = type.Type,
                 Operations = new List<IBulkOperation>()
             };
 
             RootObjectMapping currentMapping = null;
 
             try { 
-                var mappingResponse = client.GetMapping<IElasticType>(g => g.Index(request.IndexName).Type(request.TypeName));
+                var mappingResponse = client.GetMapping<IElasticType>(g => g.Index(type.Index.Name).Type(type.Type.Name));
                 currentMapping = mappingResponse.Mapping;
-            } catch ( Exception ) {}
+            } catch (Exception) {
+            }
 
             var rootObjectMapping = type.GetRootMapping();
 
             if (!rootObjectMapping.Equals(currentMapping)) {
-                client.Map<IElasticType>(m => m.Index(request.IndexName).Type(request.TypeName));
+                client.Map<IElasticType>(m => m.Index(type.Index.Name).Type(type.Type.Name));
             }
 
             foreach (var doc in docs.ElasticItems) {
                 var bulkIndexOperation = new BulkIndexOperation<IElasticItem>(doc);
                 bulkIndexOperation.Id = ((IOpenSearchResultItem)doc).Identifier;
-                bulkIndexOperation.Type = request.TypeName;
+                bulkIndexOperation.Type = type.Type.Name;
                 var bulkOp = bulkIndexOperation;
                 bulkRequest.Operations.Add(bulkOp);
             }
@@ -91,7 +100,7 @@ namespace Terradue.ElasticCas.Services {
 
             }
 
-            return new HttpResult(ingestionResponse, "application/json");
+            return ingestionResponse;
         }
 
         [AddHeader(ContentType = ContentType.Json)]
