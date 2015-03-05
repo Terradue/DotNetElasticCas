@@ -189,7 +189,7 @@ namespace Terradue.ElasticCas.Controllers {
             foreach (int code in searchExtensions.Keys) {
 
                 queryString.Set("format", searchExtensions[code].Identifier);
-                string[] queryStrings = Array.ConvertAll(parameters.AllKeys, key => string.Format("{1}={{{0}?}}", key, parameters[key]));
+                string[] queryStrings = Array.ConvertAll(queryString.AllKeys, key => string.Format("{0}={1}", key, queryString[key]));
                 searchUrl.Query = string.Join("&", queryStrings);
                 urls.Add(new OpenSearchDescriptionUrl(searchExtensions[code].DiscoveryContentType, 
                                                       searchUrl.ToString(),

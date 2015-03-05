@@ -40,6 +40,10 @@ namespace Terradue.ElasticCas.OpenSearch {
             }
         }
 
+        public override object Clone() {
+            return new ElasticOpenSearchResponse<TResult>(response);
+        }
+
         #endregion
 
         public ISearchResponse<TResult> GetResults()
