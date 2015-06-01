@@ -25,9 +25,12 @@ namespace Terradue.ElasticCas.OpenSearch {
 
         IOpenSearchableElasticType type;
 
-        internal ElasticOpenSearchRequest(ElasticClientWrapper client, string indexName, string typeName, System.Collections.Specialized.NameValueCollection parameters, IOpenSearchableElasticType type) : base(BuildOpenSearchUrl(indexName, typeName, parameters)) {
+        System.Collections.Specialized.NameValueCollection parameters;
+
+        internal ElasticOpenSearchRequest(ElasticClientWrapper client, string indexName, string typeName, System.Collections.Specialized.NameValueCollection parameters, IOpenSearchableElasticType type) :
+            base(BuildOpenSearchUrl(indexName, typeName, parameters), "application/json") {
+            this.parameters = parameters;
             this.type = type;
-            this.resultType = resultType;
             this.indexName = indexName;
             this.typeName = typeName;
             this.client = client;
@@ -55,7 +58,7 @@ namespace Terradue.ElasticCas.OpenSearch {
 
         }
 
-        public SearchDescriptor<T> DescribeSearch(SearchDescriptor<T> search){
+        public SearchDescriptor<T> DescribeSearch(SearchDescriptor<T> search) {
 
             search.Index(indexName).Type(typeName);
 
@@ -85,7 +88,7 @@ namespace Terradue.ElasticCas.OpenSearch {
             return new Terradue.OpenSearch.OpenSearchUrl(url.Uri);
         }
 
-        public long Count()  {
+        public long Count() {
 
             ISearchResponse<T> response = client.Search<T>(DescribeSearch);
 
@@ -99,6 +102,15 @@ namespace Terradue.ElasticCas.OpenSearch {
             var response = client.Search<T>(DescribeSearch);
             return new ElasticOpenSearchResponse<T>(response);
 
+        }
+
+        public override System.Collections.Specialized.NameValueCollection OriginalParameters {
+            get {
+                return parameters;
+            }
+            set {
+                parameters = value;
+            }
         }
 
         #endregion

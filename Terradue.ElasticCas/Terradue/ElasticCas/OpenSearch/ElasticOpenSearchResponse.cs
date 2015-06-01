@@ -40,7 +40,7 @@ namespace Terradue.ElasticCas.OpenSearch {
             }
         }
 
-        public override object Clone() {
+        public override IOpenSearchResponse CloneForCache() {
             return new ElasticOpenSearchResponse<TResult>(response);
         }
 
