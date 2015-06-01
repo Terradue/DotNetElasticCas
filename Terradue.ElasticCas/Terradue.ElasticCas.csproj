@@ -64,13 +64,13 @@
       <HintPath>..\packages\Mono.Addins.1.2\lib\net40\Mono.Addins.dll</HintPath>
     </Reference>
     <Reference Include="Terradue.OpenSearch">
-      <HintPath>..\..\..\..\system\GeoSquare\packages\Terradue.OpenSearch.1.9.13\lib\net40\Terradue.OpenSearch.dll</HintPath>
+      <HintPath>..\packages\Terradue.OpenSearch.1.9.13\lib\net40\Terradue.OpenSearch.dll</HintPath>
     </Reference>
     <Reference Include="Elasticsearch.Net">
-      <HintPath>..\..\..\..\system\GeoSquare\packages\Elasticsearch.Net.1.5.1\lib\net40\Elasticsearch.Net.dll</HintPath>
+      <HintPath>..\packages\Elasticsearch.Net.1.5.1\lib\net40\Elasticsearch.Net.dll</HintPath>
     </Reference>
     <Reference Include="Nest">
-      <HintPath>..\..\..\..\system\GeoSquare\packages\NEST.1.5.1\lib\net40\Nest.dll</HintPath>
+      <HintPath>..\packages\NEST.1.5.1\lib\net40\Nest.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
