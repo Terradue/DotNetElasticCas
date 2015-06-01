@@ -160,7 +160,7 @@ namespace Terradue.ElasticCas.Controllers {
 
             OpenSearchDescription osd = new OpenSearchDescription();
 
-            osd.ShortName = type + " Elastic Catalogue";
+            osd.ShortName = "Terradue Catalogue";
             osd.Attribution = "Terradue";
             osd.Contact = "info@terradue.com";
             osd.Developer = "Terradue GeoSpatial Development Team";

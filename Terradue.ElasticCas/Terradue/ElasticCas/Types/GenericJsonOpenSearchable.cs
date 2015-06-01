@@ -97,6 +97,8 @@ namespace Terradue.ElasticCas.Types {
 
 
         }
+
+
         #endregion
 
         #region IProxiedOpenSearchable implementation
@@ -181,6 +183,12 @@ namespace Terradue.ElasticCas.Types {
         public string Identifier {
             get {
                 return null;
+            }
+        }
+
+        public bool CanCache {
+            get {
+                return true;
             }
         }
 
