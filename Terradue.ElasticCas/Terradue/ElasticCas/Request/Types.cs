@@ -43,5 +43,14 @@ namespace Terradue.ElasticCas.Request {
 
         public Dictionary<string, object> parameters { get; set; } 
     }
+
+    [Route("/catalogue/{IndexName}/{TypeName}/{Id}", "DELETE")]
+    public class TypeDeleteRequest : IReturn<IElasticItem> {
+        public string IndexName { get; set; }
+
+        public string TypeName { get; set; }
+
+        public string Id { get; set; }
+    }
 }
 

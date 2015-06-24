@@ -91,8 +91,8 @@ namespace Terradue.ElasticCas.OpenSearch {
         public long Count() {
 
             ISearchResponse<T> response = client.Search<T>(DescribeSearch);
-
             return response.Total;
+
         }
 
         #region implemented abstract members of OpenSearchRequest

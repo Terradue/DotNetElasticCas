@@ -16,31 +16,23 @@ using Terradue.OpenSearch.Filters;
 namespace Terradue.ElasticCas.OpenSearch {
     public static class OpenSearchService {
 
-        public static IOpenSearchResult QueryResult(IOpenSearchableElasticType type, NameValueCollection parameters, Type resultType = null) {
+        public static IOpenSearchResultCollection QueryResult(IOpenSearchableElasticType type, NameValueCollection parameters, Type resultType = null) {
 
             OpenSearchEngine ose = type.GetOpenSearchEngine(parameters);
-
-            NameValueCollection cacheSettings = new NameValueCollection();
-            cacheSettings.Add("SlidingExpiration", "600");
-
-            if (AppHost.searchCache == null)
-                AppHost.searchCache = new OpenSearchMemoryCache("cache", cacheSettings);
-            ose.RegisterPreSearchFilter(AppHost.searchCache.TryReplaceWithCacheRequest);
-            ose.RegisterPostSearchFilter(AppHost.searchCache.CacheResponse);
 
             if ( resultType == null )
                 resultType = OpenSearchFactory.ResolveTypeFromRequest(HttpContext.Current.Request, ose);
 
             if ( resultType == typeof(ParametersResult) ){
-                return new OpenSearchResult(type.DescribeParameters(), parameters);
+                return type.DescribeParameters();
             }
 
             var result = ose.Query(type, parameters, resultType );
 
-            OpenSearchFactory.ReplaceSelfLinks(type, parameters, result.Result, type.EntrySelfLinkTemplate, result.Result.ContentType);   
-            OpenSearchFactory.ReplaceOpenSearchDescriptionLinks(type, result.Result);
+            OpenSearchFactory.ReplaceSelfLinks(type, parameters, result, type.EntrySelfLinkTemplate, result.ContentType);   
+            OpenSearchFactory.ReplaceOpenSearchDescriptionLinks(type, result);
 
-            result.Result.Title = new TextSyndicationContent(string.Format("Result for OpenSearch query over type {0} in index {1}", type.Type.Name, type.Index.Name));
+            result.Title = new TextSyndicationContent(string.Format("Result for OpenSearch query over type {0} in index {1}", type.Type.Name, type.Index.Name));
 
             return result;
         }
@@ -54,7 +46,7 @@ namespace Terradue.ElasticCas.OpenSearch {
 
             var result = QueryResult(document, parameters, resultType);
 
-            return new HttpResult(result.Result.SerializeToString(), result.Result.ContentType);
+            return new HttpResult(result.SerializeToString(), result.ContentType);
         }
 
         public static string EntrySelfLinkTemplate(IOpenSearchResultItem item, OpenSearchDescription osd, string mimeType) {

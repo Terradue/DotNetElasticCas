@@ -2,9 +2,9 @@
 
 namespace Terradue.ElasticCas {
 
-    public class IngestionResponse {
+    public class BulkOperationsResponse {
 
-        public IngestionResponse() {
+        public BulkOperationsResponse() {
         }
 
         public long Added {get; set;}
