@@ -26,16 +26,26 @@ using Terradue.ServiceModel.Syndication;
 using Terradue.ElasticCas.Controllers;
 using Terradue.ElasticCas.Types;
 using Terradue.OpenSearch.Filters;
+using System.Collections.Specialized;
 
 namespace Terradue.ElasticCas {
     public class AppHost : AppHostBase {
 
-        internal static OpenSearchMemoryCache searchCache;
+        public static OpenSearchMemoryCache searchCache;
 
         public System.Configuration.Configuration WebConfig;
         public readonly ILog Logger; 
 
-        public static OpenSearchEngine OpenSearchEngine { get; private set; }
+        static OpenSearchEngine openSearchEngine;
+        public static OpenSearchEngine OpenSearchEngine {
+            get {
+                return openSearchEngine;
+            }
+            private set {
+                openSearchEngine = value;
+            }
+        }
+
         //Tell Service Stack the name of your application and where to find your web services
         public AppHost() : base("Elastic Catalogue", typeof(OpenSearchDescriptionService).Assembly) {
 
@@ -109,6 +119,13 @@ namespace Terradue.ElasticCas {
 
             OpenSearchEngine = new OpenSearchEngine();
             OpenSearchEngine.LoadPlugins();
+
+            NameValueCollection cacheSettings = new NameValueCollection();
+            cacheSettings.Add("SlidingExpiration", "600");
+
+            AppHost.searchCache = new OpenSearchMemoryCache("cache", cacheSettings);
+            OpenSearchEngine.RegisterPreSearchFilter(AppHost.searchCache.TryReplaceWithCacheRequest);
+            OpenSearchEngine.RegisterPostSearchFilter(AppHost.searchCache.CacheResponse);
 
             ElasticCasFactory.LoadPlugins(this);
 

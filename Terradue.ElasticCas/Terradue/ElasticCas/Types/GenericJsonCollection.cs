@@ -266,9 +266,43 @@ namespace Terradue.ElasticCas.Types {
             }
         }
 
+        long totalResults;
         public long TotalResults {
             get {
-                return Items.Count();
+                return totalResults;
+            }
+            set {
+                totalResults = value;
+            }
+        }
+
+        IOpenSearchable openSearchable;
+        public IOpenSearchable OpenSearchable {
+            get {
+                return openSearchable;
+            }
+            set {
+                openSearchable = value;
+            }
+        }
+
+        NameValueCollection parameters;
+        public NameValueCollection Parameters {
+            get {
+                return parameters;
+            }
+            set {
+                parameters = value;
+            }
+        }
+
+        TimeSpan duration;
+        public TimeSpan Duration {
+            get {
+                return duration;
+            }
+            set {
+                duration = value;
             }
         }
 

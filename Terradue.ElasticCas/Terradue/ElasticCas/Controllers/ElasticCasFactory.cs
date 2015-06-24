@@ -33,7 +33,7 @@ namespace Terradue.ElasticCas.Controllers {
 
         public readonly ILog Logger;
 
-        internal ElasticCasFactory(string name) {
+        public ElasticCasFactory(string name) {
 
             // Init Log
             Logger = LogManager.GetLogger(name);
@@ -182,7 +182,7 @@ namespace Terradue.ElasticCas.Controllers {
             UriBuilder searchUrl = new UriBuilder(string.Format("{0}/catalogue/{1}/{2}/search", Settings.BaseUrl, type.Index.Name, type.Type.Name));
             NameValueCollection queryString = HttpUtility.ParseQueryString("?format=format");
             parameters.AllKeys.FirstOrDefault(k => {
-                queryString.Add(parameters[k], "{" + k + "?}");
+                queryString.Add(k, parameters[k]);
                 return false;
             });
 
