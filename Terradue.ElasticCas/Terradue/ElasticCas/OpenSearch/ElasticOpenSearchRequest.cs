@@ -64,15 +64,26 @@ namespace Terradue.ElasticCas.OpenSearch {
 
             type.DescribeSearch(search, Parameters);
 
+            int count = OpenSearchEngine.DEFAULT_COUNT;
             if (!string.IsNullOrEmpty(Parameters["count"])) {
-                search.Size(int.Parse(Parameters["count"]));
-            } else {
-                search.Size(OpenSearchEngine.DEFAULT_COUNT);
-            }
+                count = int.Parse(Parameters["count"]);
+            } 
+
+            search.Size(count);
+
+            int startIndex = 1;
+            int startPage = 1;
 
             if (!string.IsNullOrEmpty(Parameters["startIndex"])) {
-                search.From(int.Parse(Parameters["startIndex"]) - 1);
+                startIndex = int.Parse(Parameters["startIndex"]);
+
             }
+
+            if (!string.IsNullOrEmpty(Parameters["startPage"])) {
+                startPage = int.Parse(Parameters["startPage"]);
+            }
+
+            search.From(startIndex - 1 + ((startPage - 1) * count));
 
             return search;
         }
