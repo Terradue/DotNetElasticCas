@@ -34,9 +34,10 @@ namespace Terradue.ElasticCas {
         public static OpenSearchMemoryCache searchCache;
 
         public System.Configuration.Configuration WebConfig;
-        public readonly ILog Logger; 
+        public readonly ILog Logger;
 
         static OpenSearchEngine openSearchEngine;
+
         public static OpenSearchEngine OpenSearchEngine {
             get {
                 return openSearchEngine;
@@ -52,8 +53,12 @@ namespace Terradue.ElasticCas {
             log4net.Config.XmlConfigurator.Configure(new FileInfo("log4net.config"));
 
             // Initialize the add-in engine
-            AddinManager.Initialize();
-            AddinManager.Registry.Update(null);
+            try {
+                AddinManager.Initialize();
+                AddinManager.Registry.Update(null);
+            } catch (Exception e) {
+                throw e;
+            }
 
             LoadStaticObject();
 

@@ -12,9 +12,13 @@ using System.Diagnostics;
 using Nest;
 using Terradue.ElasticCas.Types;
 using Newtonsoft.Json;
+using Terradue.OpenSearch.Result;
 
 namespace Terradue.ElasticCas.OpenSearch {
     public class ElasticOpenSearchRequest<T> : OpenSearchRequest where T: class, IElasticItem, new() {
+
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger
+            (System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         string indexName;
         string typeName;
@@ -22,6 +26,8 @@ namespace Terradue.ElasticCas.OpenSearch {
         Type resultType;
 
         ElasticClientWrapper client;
+
+        static ElasticCasFactory factory = new ElasticCasFactory("ElasticOpenSearchRequest");
 
         IOpenSearchableElasticType type;
 
@@ -34,6 +40,8 @@ namespace Terradue.ElasticCas.OpenSearch {
             this.indexName = indexName;
             this.typeName = typeName;
             this.client = client;
+
+
         }
 
         public string IndexName {
@@ -49,10 +57,8 @@ namespace Terradue.ElasticCas.OpenSearch {
         }
 
         public static ElasticOpenSearchRequest<T> Create(System.Collections.Specialized.NameValueCollection parameters, IOpenSearchableElasticType type) {
-
-            ElasticCasFactory ecf = new ElasticCasFactory("ElasticOpenSearchRequest");
-
-            ElasticOpenSearchRequest<T> eosRequest = new ElasticOpenSearchRequest<T>(ecf.Client, type.Index.Name, type.Type.Name, parameters, type);
+            
+            ElasticOpenSearchRequest<T> eosRequest = new ElasticOpenSearchRequest<T>(factory.Client, type.Index.Name, type.Type.Name, parameters, type);
 
             return eosRequest;
 
@@ -62,6 +68,7 @@ namespace Terradue.ElasticCas.OpenSearch {
 
             search.Index(indexName).Type(typeName);
 
+            log.DebugFormat("describe search for type {0}", typeName);
             type.DescribeSearch(search, Parameters);
 
             int count = OpenSearchEngine.DEFAULT_COUNT;
@@ -84,6 +91,7 @@ namespace Terradue.ElasticCas.OpenSearch {
             }
 
             search.From(startIndex - 1 + ((startPage - 1) * count));
+            log.DebugFormat("describe completed");
 
             return search;
         }
@@ -101,8 +109,15 @@ namespace Terradue.ElasticCas.OpenSearch {
 
         public long Count() {
 
-            ISearchResponse<T> response = client.Search<T>(DescribeSearch);
-            return response.Total;
+            // error is catched in order to not produce an excpetion
+            // we assume 0 results
+            // the error shall be described in the result feed
+            try {
+                ISearchResponse<T> response = client.Search<T>(DescribeSearch);
+                return response.Total;
+            } catch (Exception) {
+                return 0;
+            }
 
         }
 
@@ -110,8 +125,11 @@ namespace Terradue.ElasticCas.OpenSearch {
 
         public override IOpenSearchResponse GetResponse() {
 
+            log.DebugFormat("Describe query and start search");
             var response = client.Search<T>(DescribeSearch);
+            log.DebugFormat("Search completed in {0} ms, returning response", response.ElapsedMilliseconds);
             return new ElasticOpenSearchResponse<T>(response);
+            
 
         }
 

@@ -14,20 +14,22 @@ using Nest;
 using Terradue.OpenSearch.Filters;
 
 namespace Terradue.ElasticCas.OpenSearch {
-    public static class OpenSearchService {
+    public class OpenSearchService {
 
-        public static IOpenSearchResultCollection QueryResult(IOpenSearchableElasticType type, NameValueCollection parameters, Type resultType = null) {
+        public IOpenSearchResultCollection QueryResult(IOpenSearchableElasticType type, NameValueCollection parameters, Type resultType = null) {
+
+            IOpenSearchResultCollection result = null;
 
             OpenSearchEngine ose = type.GetOpenSearchEngine(parameters);
 
-            if ( resultType == null )
-                resultType = OpenSearchFactory.ResolveTypeFromRequest(HttpContext.Current.Request, ose);
-
-            if ( resultType == typeof(ParametersResult) ){
-                return type.DescribeParameters();
+            if (resultType == null) {
+                if (HttpContext.Current != null) {
+                    resultType = OpenSearchFactory.ResolveTypeFromRequest(HttpContext.Current.Request, ose);
+                } else
+                    resultType = typeof(AtomFeed);
             }
 
-            var result = ose.Query(type, parameters, resultType );
+            result = ose.Query(type, parameters, resultType);
 
             OpenSearchFactory.ReplaceSelfLinks(type, parameters, result, type.EntrySelfLinkTemplate, result.ContentType);   
             OpenSearchFactory.ReplaceOpenSearchDescriptionLinks(type, result);
@@ -37,7 +39,7 @@ namespace Terradue.ElasticCas.OpenSearch {
             return result;
         }
 
-        public static HttpResult Query(IOpenSearchableElasticType document, NameValueCollection parameters, Type resultType = null) {
+        public HttpResult Query(IOpenSearchableElasticType document, NameValueCollection parameters, Type resultType = null) {
 
             // special case for description
             if (HttpContext.Current.Request.AcceptTypes != null && HttpContext.Current.Request.AcceptTypes[0] == "application/opensearchdescription+xml" || parameters["format"] == "description") {
@@ -49,7 +51,7 @@ namespace Terradue.ElasticCas.OpenSearch {
             return new HttpResult(result.SerializeToString(), result.ContentType);
         }
 
-        public static string EntrySelfLinkTemplate(IOpenSearchResultItem item, OpenSearchDescription osd, string mimeType) {
+        public string EntrySelfLinkTemplate(IOpenSearchResultItem item, OpenSearchDescription osd, string mimeType) {
             if (item == null)
                 return null;
 

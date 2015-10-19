@@ -113,7 +113,7 @@ namespace Terradue.ElasticCas.Services {
             osParameters = OpenSearchFactory.ReplaceTemplateByIdentifier(osParameters, osdUrl);
             osParameters.Add(Request.QueryString);
 
-            return OpenSearchService.Query(type, osParameters);
+            return new OpenSearchService().Query(type, osParameters);
 
         }
 

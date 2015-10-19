@@ -29,6 +29,8 @@ namespace Terradue.ElasticCas.Model {
         string EntrySelfLinkTemplate(IOpenSearchResultItem item, OpenSearchDescription osd, string mimeType);
 
         IElasticCollection FromOpenSearchResultCollection(IOpenSearchResultCollection results);
+
+        List<OpenSearchDescriptionUrlParameter> DescribeParameters();
     }
 }
 

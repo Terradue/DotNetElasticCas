@@ -25,6 +25,7 @@ namespace Terradue.ElasticCas.Types {
         IndexNameMarker index;
 
         public GenericJsonOpenSearchable() {
+            this.type = new TypeNameMarker();
         }
 
         public GenericJsonOpenSearchable(IndexNameMarker index, TypeNameMarker type) {
@@ -65,7 +66,7 @@ namespace Terradue.ElasticCas.Types {
         }
 
         public string EntrySelfLinkTemplate(IOpenSearchResultItem item, OpenSearchDescription osd, string mimeType) {
-            return OpenSearchService.EntrySelfLinkTemplate(item, osd, mimeType);
+            return new OpenSearchService().EntrySelfLinkTemplate(item, osd, mimeType);
         }
 
         Dictionary<string, object> parameters;
@@ -90,14 +91,9 @@ namespace Terradue.ElasticCas.Types {
 
         }
 
-
-        public ParametersResult DescribeParameters() {
-
-            return OpenSearchFactory.GetDefaultParametersResult();
-
-
+        public List<OpenSearchDescriptionUrlParameter> DescribeParameters() {
+            return new List<OpenSearchDescriptionUrlParameter>();
         }
-
 
         #endregion
 
@@ -170,7 +166,7 @@ namespace Terradue.ElasticCas.Types {
             }
         }
 
-        public void ApplyResultFilters(OpenSearchRequest request,  ref IOpenSearchResultCollection osr) {
+        public void ApplyResultFilters(OpenSearchRequest request,  ref IOpenSearchResultCollection osr, string finalContentType) {
             OpenSearchFactory.ReplaceSelfLinks(this, request.Parameters, osr, this.EntrySelfLinkTemplate); 
         }
 

@@ -23,6 +23,10 @@ using Terradue.ElasticCas.Responses;
 namespace Terradue.ElasticCas.Controllers {
 
     public class ElasticCasFactory {
+        
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger
+            (System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         ElasticClientWrapper client;
 
         public System.Configuration.Configuration RootWebConfig { get; set; }
@@ -35,17 +39,14 @@ namespace Terradue.ElasticCas.Controllers {
 
         public ElasticCasFactory(string name) {
 
-            // Init Log
-            Logger = LogManager.GetLogger(name);
-
             if (Settings.Exists()) {
-                Logger.InfoFormat("Using ElasticSearch Host : {0}", Settings.ElasticSearchServer);
+                log.DebugFormat("Using ElasticSearch Host : {0}", Settings.ElasticSearchServer);
             } else {
-                Logger.InfoFormat("No ElasticSearch Host specified, using default : {0}", Settings.ElasticSearchServer);
+                log.DebugFormat("No ElasticSearch Host specified, using default : {0}", Settings.ElasticSearchServer);
             }
 
             client = new ElasticClientWrapper();
-            Logger.InfoFormat("New ElasticSearch Connection from {0}", name);
+            log.DebugFormat("New ElasticSearch Connection from {0}", name);
         }
 
         public ElasticClientWrapper Client {
@@ -65,7 +66,13 @@ namespace Terradue.ElasticCas.Controllers {
                 }
             }
            
-            var response = client.CreateIndex(c => c.Index(createRequest.IndexName));
+            var htmlAnalyzer = new CustomAnalyzer();
+            htmlAnalyzer.Tokenizer = "standard";
+            htmlAnalyzer.Filter = new List<string>(){ "standard" };
+            htmlAnalyzer.CharFilter = new List<string>(){ "html_strip" };
+
+            var response = client.CreateIndex(c => c.Index(createRequest.IndexName).Analysis(a => a.Analyzers(an => an.Add(
+                "htmlAnalyzer", htmlAnalyzer ))));
          
             IndexInformation indexInformation = new IndexInformation();
             var status = client.Status(s => s.Index(createRequest.IndexName));
@@ -86,9 +93,9 @@ namespace Terradue.ElasticCas.Controllers {
                     PutMappingRequest putMappingRequest = new PutMappingRequest(indexName, type.Type);
                     ((IPutMappingRequest)putMappingRequest).Mapping = type.GetRootMapping();
 
-                    client.Map(putMappingRequest);
+                    var responseM = client.Map(putMappingRequest);
 
-                    indexInformation.Mappings.Add(type.Identifier, ((IPutMappingRequest)putMappingRequest).Mapping.Properties.Keys);
+                    indexInformation.Mappings.Add(type.Type.Name, ((IPutMappingRequest)putMappingRequest).Mapping.Properties.Keys);
 
                     typeNames.Add(type.Type.Name);
                 }
@@ -105,7 +112,7 @@ namespace Terradue.ElasticCas.Controllers {
 
                             client.Map(putMappingRequest);
 
-                            indexInformation.Mappings.Add(type.Identifier, ((IPutMappingRequest)putMappingRequest).Mapping.Properties.Keys);
+                            indexInformation.Mappings.Add(type.Type.Name, ((IPutMappingRequest)putMappingRequest).Mapping.Properties.Keys);
 
                         }
                     }
@@ -141,7 +148,7 @@ namespace Terradue.ElasticCas.Controllers {
         public IOpenSearchableElasticType GetOpenSearchableElasticTypeByName(string indexName, string typeName, Dictionary<string, object> parameters = null) {
             foreach (TypeExtensionNode node in AddinManager.GetExtensionNodes (typeof(IOpenSearchableElasticType))) {
                 IOpenSearchableElasticType etype = (IOpenSearchableElasticType)node.CreateInstance();
-                if (etype.Identifier == typeName) {
+                if (etype.Type.Name == typeName) {
                     Type type = node.Type;
                     var ctor = type.GetConstructor(new Type[2]{ typeof(IndexNameMarker), typeof(TypeNameMarker) });
                     var indexNameMarker = new IndexNameMarker();
@@ -156,7 +163,7 @@ namespace Terradue.ElasticCas.Controllers {
             return null;
         }
 
-        public static OpenSearchDescription GetDefaultOpenSearchDescription(IOpenSearchableElasticType type) {
+        public static OpenSearchDescription GetDefaultOpenSearchDescription(IOpenSearchableElasticType type, bool withParam = true) {
 
             OpenSearchDescription osd = new OpenSearchDescription();
 
@@ -178,6 +185,9 @@ namespace Terradue.ElasticCas.Controllers {
             List<OpenSearchDescriptionUrl> urls = new List<OpenSearchDescriptionUrl>();
 
             NameValueCollection parameters = type.GetOpenSearchParameters(type.DefaultMimeType);
+            OpenSearchDescriptionUrlParameter[] parameters2 = null;
+            if ( withParam )
+                parameters2 = type.DescribeParameters().ToArray();
 
             UriBuilder searchUrl = new UriBuilder(string.Format("{0}/catalogue/{1}/{2}/search", Settings.BaseUrl, type.Index.Name, type.Type.Name));
             NameValueCollection queryString = HttpUtility.ParseQueryString("?format=format");
@@ -186,20 +196,29 @@ namespace Terradue.ElasticCas.Controllers {
                 return false;
             });
 
+            OpenSearchDescriptionUrl url = null;
+
             foreach (int code in searchExtensions.Keys) {
 
                 queryString.Set("format", searchExtensions[code].Identifier);
                 string[] queryStrings = Array.ConvertAll(queryString.AllKeys, key => string.Format("{0}={1}", key, queryString[key]));
                 searchUrl.Query = string.Join("&", queryStrings);
-                urls.Add(new OpenSearchDescriptionUrl(searchExtensions[code].DiscoveryContentType, 
+                url = new OpenSearchDescriptionUrl(searchExtensions[code].DiscoveryContentType, 
                                                       searchUrl.ToString(),
-                                                      "results"));
+                                                      "results");
+                url.Parameters = parameters2;
+                urls.Add(url);
 
             }
             searchUrl = new UriBuilder(string.Format("{0}/catalogue/{1}/{2}/description", Settings.BaseUrl, type.Index.Name, type.Type.Name));
-            urls.Add(new OpenSearchDescriptionUrl("application/opensearchdescription+xml", 
-                                                  searchUrl.ToString(),
-                                                  "self"));
+
+
+            url = new OpenSearchDescriptionUrl("application/opensearchdescription+xml", 
+                                                       searchUrl.ToString(),
+                                                       "self");
+
+
+            urls.Add(url);
             osd.Url = urls.ToArray();
 
             return osd;

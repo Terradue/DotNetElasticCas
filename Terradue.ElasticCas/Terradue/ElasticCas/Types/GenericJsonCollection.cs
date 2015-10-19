@@ -37,6 +37,17 @@ namespace Terradue.ElasticCas.Types {
 
         }
 
+        public GenericJsonCollection(GenericJsonCollection from) {
+
+            links = from.Links;
+
+            foreach (GenericJsonItem result in from.Items) {
+                var item = new GenericJsonItem(result);
+                items.Add(item);
+            }
+
+        }
+
         public static string ToJson(GenericJsonCollection gjc) {
 
             Dictionary<string, object> json = new Dictionary<string, object>();
@@ -225,7 +236,7 @@ namespace Terradue.ElasticCas.Types {
 
         DateTime date;
 
-        public DateTime Date {
+        public DateTime LastUpdatedTime {
             get {
                 return date;
             }
@@ -297,7 +308,7 @@ namespace Terradue.ElasticCas.Types {
         }
 
         TimeSpan duration;
-        public TimeSpan Duration {
+        public TimeSpan QueryTimeSpan {
             get {
                 return duration;
             }
@@ -354,12 +365,16 @@ namespace Terradue.ElasticCas.Types {
                     throw new InvalidDataException("Result is not a GenericJson document.");
             }
             collection.ShowNamespaces = true;
-            collection.Date = DateTime.UtcNow;
+            collection.LastUpdatedTime = DateTime.UtcNow;
             collection.ElementExtensions.Add(new XElement(XName.Get("totalResults", "http://a9.com/-/spec/opensearch/1.1/"), results.Total).CreateReader());
 
             return collection;
 
 
+        }
+
+        public object Clone() {
+            return new GenericJsonCollection(this);
         }
     }
 }

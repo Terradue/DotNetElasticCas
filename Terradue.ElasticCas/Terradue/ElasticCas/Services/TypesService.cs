@@ -92,19 +92,26 @@ namespace Terradue.ElasticCas.Services {
                 bulkRequest.Operations.Add(bulkOp);
             }
 
-            var response = client.Bulk(bulkRequest);
-
             BulkOperationsResponse ingestionResponse = new BulkOperationsResponse();
-            foreach (var item in response.Items) {
-                if (!item.IsValid) {
-                    ingestionResponse.Errors++;
-                    continue;
-                }
-                if (item.Version == "1")
-                    ingestionResponse.Added++;
-                else
-                    ingestionResponse.Updated++;
 
+            try {
+
+                var response = client.Bulk(bulkRequest);
+                foreach (var item in response.Items) {
+                    if (!item.IsValid) {
+                        ingestionResponse.Errors++;
+                        continue;
+                    }
+                    if (item.Version == "1")
+                        ingestionResponse.Added++;
+                    else
+                        ingestionResponse.Updated++;
+
+                }
+
+            } catch (ArgumentException e) {
+                if (!e.Message.StartsWith("Argument can not be an empty collection"))
+                    throw e;
             }
 
             return ingestionResponse;
@@ -163,7 +170,7 @@ namespace Terradue.ElasticCas.Services {
             NameValueCollection parameters = new NameValueCollection();
             parameters.Set("uid", request.Id);
 
-            return OpenSearchService.Query(type, parameters);
+            return new OpenSearchService().Query(type, parameters);
         }
 
     }
@@ -182,7 +189,7 @@ namespace Terradue.ElasticCas.Services {
             IOpenSearchableElasticType type = ecf.GetOpenSearchableElasticTypeByNameOrDefault(request.IndexName, request.TypeName);
             NameValueCollection parameters = new NameValueCollection();
             parameters.Set("uid", request.Id);
-            var results = OpenSearchService.QueryResult(type, parameters);
+            var results = new OpenSearchService().QueryResult(type, parameters);
 
             var response = Delete(type, results);
 

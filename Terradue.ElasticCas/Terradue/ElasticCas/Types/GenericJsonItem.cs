@@ -35,7 +35,8 @@ namespace Terradue.ElasticCas.Types {
 
         public GenericJsonItem() {
             this.payload = new Dictionary<string, object>();
-            Date = DateTime.UtcNow;
+            LastUpdatedTime = DateTime.UtcNow;
+            PublishDate = DateTime.UtcNow;
             links = new Collection<SyndicationLink>();
             authors = new Collection<SyndicationPerson>();
             categories = new Collection<SyndicationCategory>();
@@ -53,6 +54,14 @@ namespace Terradue.ElasticCas.Types {
             }
         }
 
+        public GenericJsonItem(GenericJsonItem item) : this() {
+
+            Identifier = item.Identifier;
+            LastUpdatedTime = item.LastUpdatedTime;
+
+            ElementExtensions = new SyndicationElementExtensionCollection(item.ElementExtensions);
+        }
+
         public new static GenericJsonItem FromOpenSearchResultItem(IOpenSearchResultItem result) {
             if (result is GenericJsonItem)
                 return (GenericJsonItem)result;
@@ -60,7 +69,7 @@ namespace Terradue.ElasticCas.Types {
             GenericJsonItem item = new GenericJsonItem();
 
             item.Identifier = result.Identifier;
-            item.Date = result.Date;
+            item.LastUpdatedTime = result.LastUpdatedTime;
 
             foreach (SyndicationElementExtension ext in result.ElementExtensions) {
                 XmlDocument doc = new XmlDocument();
@@ -129,14 +138,25 @@ namespace Terradue.ElasticCas.Types {
             }
         }
 
-        public DateTime Date {
+        public DateTime LastUpdatedTime {
             get {
-                if (payload.ContainsKey("date"))
-                    return (DateTime)payload["date"];
+                if (payload.ContainsKey("updated"))
+                    return (DateTime)payload["updated"];
                 return DateTime.UtcNow;
             }
             set {
-                payload["date"] = value;
+                payload["updated"] = value;
+            }
+        }
+
+        public DateTime PublishDate {
+            get {
+                if (payload.ContainsKey("published"))
+                    return (DateTime)payload["published"];
+                return DateTime.UtcNow;
+            }
+            set {
+                payload["published"] = value;
             }
         }
 
@@ -241,6 +261,18 @@ namespace Terradue.ElasticCas.Types {
             }
             set {
                 showNamespaces = value;
+            }
+        }
+
+        string sortKey;
+        public string SortKey {
+            get {
+                if (sortKey == null)
+                    return LastUpdatedTime.ToUniversalTime().ToString("O");
+                return sortKey.ToString();
+            }
+            set {
+                sortKey = value;
             }
         }
 

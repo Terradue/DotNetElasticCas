@@ -37,7 +37,7 @@ namespace Terradue.ElasticCas.Services {
                 }
             }
 
-            return OpenSearchService.Query(type, parameters);
+            return new OpenSearchService().Query(type, parameters);
         }
 
         public static void SerializeToStream(IRequestContext requestContext, 
