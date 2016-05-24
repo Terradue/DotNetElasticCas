@@ -22,6 +22,7 @@ using System.Linq;
 using Terradue.ElasticCas.OpenSearch.Extensions;
 using System.Web;
 using System.Xml;
+using Terradue.ElasticCas.Converters;
 
 
 namespace Terradue.ElasticCas.Types {
@@ -29,7 +30,7 @@ namespace Terradue.ElasticCas.Types {
     [Serializable]
     [DataContract]
     [JsonConverter(typeof(ElasticJsonTypeConverter))]
-    public class GenericJsonItem : IElasticItem {
+    public class GenericJsonItem : IElasticItem, IElasticObject {
     
         Dictionary<string, object> payload;
 
@@ -46,7 +47,7 @@ namespace Terradue.ElasticCas.Types {
         public GenericJsonItem(Dictionary<string, object> item) : this() {
         
             foreach (string ext in item.Keys) {
-                if ( payload.ContainsKey(ext) )
+                if (payload.ContainsKey(ext))
                     payload.Remove(ext);
 
                 payload.Add(ext, item[ext]);
@@ -138,6 +139,16 @@ namespace Terradue.ElasticCas.Types {
             }
         }
 
+        public DateTime Modified {
+            get {
+                return this.LastUpdatedTime;
+            }
+            set {
+                this.LastUpdatedTime = value;
+            }
+        }
+
+
         public DateTime LastUpdatedTime {
             get {
                 if (payload.ContainsKey("updated"))
@@ -173,6 +184,7 @@ namespace Terradue.ElasticCas.Types {
         }
 
         TextSyndicationContent summary;
+
         public TextSyndicationContent Summary {
             get {
                 return summary;
@@ -183,6 +195,7 @@ namespace Terradue.ElasticCas.Types {
         }
 
         readonly Collection<SyndicationPerson> contributors;
+
         public Collection<SyndicationPerson> Contributors {
             get {
                 return contributors;
@@ -190,6 +203,7 @@ namespace Terradue.ElasticCas.Types {
         }
 
         TextSyndicationContent copyright;
+
         public TextSyndicationContent Copyright {
             get {
                 return copyright;
@@ -199,7 +213,11 @@ namespace Terradue.ElasticCas.Types {
             }
         }
 
+
         Collection<SyndicationLink> links;
+
+        [ElasticProperty(Type = FieldType.Nested)]
+        [JsonConverter(typeof(SyndicationLinkCollectionConverter))]
         public Collection<SyndicationLink> Links {
             get {
                 return links;
@@ -227,6 +245,7 @@ namespace Terradue.ElasticCas.Types {
         }
 
         SyndicationContent content;
+
         public SyndicationContent Content {
             get {
                 return content;
@@ -265,6 +284,7 @@ namespace Terradue.ElasticCas.Types {
         }
 
         string sortKey;
+
         public string SortKey {
             get {
                 if (sortKey == null)
@@ -286,8 +306,18 @@ namespace Terradue.ElasticCas.Types {
         public void WriteElasticJson(JsonWriter writer, Newtonsoft.Json.JsonSerializer serializer) {
             serializer.Serialize(writer, payload);
         }
+
         #endregion
        
+        public int CurrentVersion {
+            get {
+                return 1;
+            }
+        }
+
+        public IElasticObject UpgradeObject(IElasticObject obj) {
+            return obj;
+        }
     }
 }
 

@@ -1,0 +1,15 @@
+﻿<Properties StartupItem="Terradue.Elastic.Tests/Terradue.Elastic.Tests.csproj" RefactoringSettings.EnableRefactorings="True">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" ActiveRuntime="Mono 3.12.1 (b7764aa)" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Terradue.Elastic.Tests/Tests/Index/IndexTest.cs">
+    <Files>
+      <File FileName="Terradue.Elastic.Tests/Tests/Index/IndexTest.cs" Line="41" Column="9" />
+      <File FileName="Terradue/ElasticCas/AppHost.cs" Line="1" Column="1" />
+      <File FileName="Terradue.Elastic.Tests/Tests/IntegrationTest.cs" Line="1" Column="1" />
+      <File FileName="Terradue/ElasticCas/Services/TypesIngestionService.cs" Line="43" Column="13" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

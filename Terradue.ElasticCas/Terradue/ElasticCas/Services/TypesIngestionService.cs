@@ -33,13 +33,13 @@ namespace Terradue.ElasticCas.Services {
 
             IOpenSearchableElasticType type = ecf.GetOpenSearchableElasticTypeByNameOrDefault(request.IndexName, request.TypeName);
 
-            var response = Ingest(type, Request);
+            var response = Bulk(type, Request);
 
             return new HttpResult(response, "application/json");
 
         }
 
-        public BulkOperationsResponse Ingest(IOpenSearchableElasticType type, IHttpRequest request) {
+        public BulkOperationsResponse Bulk(IOpenSearchableElasticType type, IHttpRequest request) {
 
             OpenSearchEngine ose = type.GetOpenSearchEngine(new NameValueCollection());
 
@@ -51,11 +51,11 @@ namespace Terradue.ElasticCas.Services {
 
             IOpenSearchResultCollection results = osee.ReadNative(payload);
 
-            return Ingest(type, results);
+            return Bulk(type, results);
 
         }
 
-        public BulkOperationsResponse Ingest(IOpenSearchableElasticType type, IOpenSearchResultCollection results) {
+        public BulkOperationsResponse Bulk(IOpenSearchableElasticType type, IOpenSearchResultCollection results) {
 
             OpenSearchFactory.RemoveLinksByRel(ref results, "self");
             OpenSearchFactory.RemoveLinksByRel(ref results, "search");
@@ -85,6 +85,7 @@ namespace Terradue.ElasticCas.Services {
             }
 
             foreach (var doc in docs.ElasticItems) {
+                ((IOpenSearchResultItem)doc).LastUpdatedTime = DateTime.UtcNow;
                 var bulkIndexOperation = new BulkIndexOperation<IElasticItem>(doc);
                 bulkIndexOperation.Id = ((IOpenSearchResultItem)doc).Identifier;
                 bulkIndexOperation.Type = type.Type.Name;
@@ -131,8 +132,6 @@ namespace Terradue.ElasticCas.Services {
             IOpenSearchableElasticType type = ecf.GetOpenSearchableElasticTypeByNameOrDefault(request.IndexName, request.TypeName);
 
             IOpenSearchResultCollection osres = ose.Query(entity, new NameValueCollection());
-            OpenSearchFactory.RemoveLinksByRel(ref osres, "alternate");
-            OpenSearchFactory.RemoveLinksByRel(ref osres, "via");
             OpenSearchFactory.RemoveLinksByRel(ref osres, "self");
             OpenSearchFactory.RemoveLinksByRel(ref osres, "search");
 
@@ -153,80 +152,5 @@ namespace Terradue.ElasticCas.Services {
             return response;
         }
     }
-
-    [Api("Type Retrieval Service")]
-    [Restrict(EndpointAttributes.InSecure | EndpointAttributes.InternalNetworkAccess | EndpointAttributes.Json,
-              EndpointAttributes.Secure | EndpointAttributes.External | EndpointAttributes.Json)]
-    public class TypeRetrievalService : BaseService {
-        public TypeRetrievalService() : base("Type Retrieval Service") {
-
-        }
-
-        [AddHeader(ContentType = ContentType.Json)]
-        public object Get(TypeGetRequest request) {
-
-            IOpenSearchableElasticType type = ecf.GetOpenSearchableElasticTypeByNameOrDefault(request.IndexName, request.TypeName);
-
-            NameValueCollection parameters = new NameValueCollection();
-            parameters.Set("uid", request.Id);
-
-            return new OpenSearchService().Query(type, parameters);
-        }
-
-    }
-
-    [Api("Type Edition Service")]
-    [Restrict(EndpointAttributes.InSecure | EndpointAttributes.InternalNetworkAccess | EndpointAttributes.Json,
-              EndpointAttributes.Secure | EndpointAttributes.External | EndpointAttributes.Json)]
-    public class TypeEditionService : BaseService {
-        public TypeEditionService() : base("Type Edition Service") {
-
-        }
-
-        [AddHeader(ContentType = ContentType.Json)]
-        public object Delete(TypeDeleteRequest request) {
-
-            IOpenSearchableElasticType type = ecf.GetOpenSearchableElasticTypeByNameOrDefault(request.IndexName, request.TypeName);
-            NameValueCollection parameters = new NameValueCollection();
-            parameters.Set("uid", request.Id);
-            var results = new OpenSearchService().QueryResult(type, parameters);
-
-            var response = Delete(type, results);
-
-            return new HttpResult(response, "application/json");
-        }
-
-        public BulkOperationsResponse Delete(IOpenSearchableElasticType type, IOpenSearchResultCollection results) {
-
-            BulkRequest bulkRequest = new BulkRequest() {
-                Refresh = true,
-                Consistency = Consistency.One,
-                Index = type.Index,
-                Type = type.Type,
-                Operations = new List<IBulkOperation>()
-            };
-
-            foreach (var doc in results.Items) {
-                var bulkDeleteOperation = new BulkDeleteOperation<IElasticItem>(doc.Identifier);
-                bulkDeleteOperation.Type = type.Type.Name;
-                var bulkOp = bulkDeleteOperation;
-                bulkRequest.Operations.Add(bulkOp);
-            }
-
-            var response = client.Bulk(bulkRequest);
-
-            BulkOperationsResponse ingestionResponse = new BulkOperationsResponse();
-            foreach (var item in response.Items) {
-                if (!item.IsValid) {
-                    ingestionResponse.Errors++;
-                } else {
-                    ingestionResponse.Deleted++;
-                }
-
-            }
-
-            return ingestionResponse;
-        }
-    }
+    
 }
-

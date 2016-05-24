@@ -8,6 +8,7 @@ using System.Collections.Specialized;
 using Terradue.OpenSearch.Schema;
 using Terradue.OpenSearch.Result;
 using Mono.Addins;
+using Terradue.ElasticCas.Controllers;
 
 [assembly:AddinRoot("ElasticCas", "1.1")]
 [assembly:AddinDescription("Elastic Catalogue")]
@@ -17,6 +18,8 @@ namespace Terradue.ElasticCas.Model {
     public interface IOpenSearchableElasticType : IElasticType, IOpenSearchable, IProxiedOpenSearchable {
 
         IndexNameMarker Index { get; }
+
+        TypeNameMarker Type { get; }
 
         RootObjectMapping GetRootMapping();
 
@@ -31,6 +34,8 @@ namespace Terradue.ElasticCas.Model {
         IElasticCollection FromOpenSearchResultCollection(IOpenSearchResultCollection results);
 
         List<OpenSearchDescriptionUrlParameter> DescribeParameters();
+
+        void ReindexTypeWithMigration(string currentIndexName, string nextIndexName, TypeInformation type, ElasticCasFactory ecf);
     }
 }
 

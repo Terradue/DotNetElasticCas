@@ -1,0 +1,19 @@
+﻿{
+    "items":[
+        {
+            "user" : "manu",
+            "post_date" : "2014-09-24T15:10:12",
+            "message" : "trying out ElasticCas"
+        },
+        {
+            "user" : "bob",
+            "post_date" : "1973-05-24T12:45:33",
+            "message" : "Knockin' on Heaven's Door"
+        },
+		{
+            "user" : "biff",
+            "post_date" : "1955-11-12T08:34:23",
+            "message" : "Hello. Hello. Anybody home? Heh, think McFly. Think!"
+        }
+    ]   
+}

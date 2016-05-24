@@ -6,11 +6,15 @@ using Nest;
 namespace Terradue.ElasticCas.Request {
 
 
-	[Route("/catalogue/{IndexName}", "PUT")]
+    [Route("/catalogue/{IndexName}", "PUT")]
     public class CreateIndexRequest : Index, IReturn<IndexStatus>{
 
-		
-	}
+        public CreateIndexRequest() : base() {}
+
+        public CreateIndexRequest(Index index) : base (index) {
+        }
+
+    }
 
     [Route("/catalogue/{IndexName}", "DELETE")]
     public class DeleteIndexRequest : IReturn<string>{
@@ -18,4 +22,5 @@ namespace Terradue.ElasticCas.Request {
         public string IndexName { get; set; }
     }
 }
+
 

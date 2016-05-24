@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.ElasticCas", "Terradue.ElasticCas.csproj", "{3ED47B7C-208B-4C14-A3FD-3CB92FF84A93}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Terradue.Elastic.Tests", "Terradue.Elastic.Tests\Terradue.Elastic.Tests.csproj", "{E30E229C-1C73-49AB-A3C7-00902AD4AE00}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3ED47B7C-208B-4C14-A3FD-3CB92FF84A93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3ED47B7C-208B-4C14-A3FD-3CB92FF84A93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3ED47B7C-208B-4C14-A3FD-3CB92FF84A93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3ED47B7C-208B-4C14-A3FD-3CB92FF84A93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E30E229C-1C73-49AB-A3C7-00902AD4AE00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E30E229C-1C73-49AB-A3C7-00902AD4AE00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E30E229C-1C73-49AB-A3C7-00902AD4AE00}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E30E229C-1C73-49AB-A3C7-00902AD4AE00}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

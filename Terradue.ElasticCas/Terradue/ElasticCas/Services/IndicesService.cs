@@ -27,8 +27,8 @@ namespace Terradue.ElasticCas.Services {
 		}
 
         [AddHeader(ContentType=ContentType.Json)]
-        public object Delete(DeleteIndexRequest request) {
-            return client.DeleteIndex(d => d.Index(request.IndexName)).RequestInformation.ResponseRaw;
+        public Nest.IIndicesResponse Delete(DeleteIndexRequest request) {
+            return client.DeleteIndex(d => d.Index(request.IndexName));
         }
 	}
 }

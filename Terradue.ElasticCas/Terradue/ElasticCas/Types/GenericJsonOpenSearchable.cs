@@ -26,10 +26,10 @@ namespace Terradue.ElasticCas.Types {
 
         public GenericJsonOpenSearchable() {
             this.type = new TypeNameMarker();
+            this.type.Name = "generic";
         }
 
-        public GenericJsonOpenSearchable(IndexNameMarker index, TypeNameMarker type) {
-            this.type = type;
+        public GenericJsonOpenSearchable(IndexNameMarker index) : this() {
             this.index = index;
         }
 
@@ -47,9 +47,7 @@ namespace Terradue.ElasticCas.Types {
             SearchDescriptor<GenericJsonItem> searchD = (SearchDescriptor<GenericJsonItem>)search;
             searchD.MatchAll();
 
-            if (!string.IsNullOrEmpty(nvc["q"])) {
-                searchD.QueryString(nvc["q"]);
-            }
+            searchD.Query(OpenSearchHelpers.DescribeFilters(nvc));
 
             return searchD;
         }
@@ -95,6 +93,10 @@ namespace Terradue.ElasticCas.Types {
             return new List<OpenSearchDescriptionUrlParameter>();
         }
 
+
+        public void ReindexTypeWithMigration(string currentIndexName, string nextIndexName, TypeInformation type, ElasticCasFactory ecf) {
+            throw new NotImplementedException();
+        }
         #endregion
 
         #region IProxiedOpenSearchable implementation
@@ -156,7 +158,7 @@ namespace Terradue.ElasticCas.Types {
         }
 
         public System.Collections.Specialized.NameValueCollection GetOpenSearchParameters(string mimeType) {
-            return OpenSearchFactory.ReverseTemplateOpenSearchParameters(OpenSearchFactory.GetBaseOpenSearchParameter());
+            return OpenSearchHelpers.GetElasticCasOpenSearchParameters();
         }
 
         public long TotalResults {
@@ -178,7 +180,7 @@ namespace Terradue.ElasticCas.Types {
 
         public string Identifier {
             get {
-                return null;
+                return Index.Name + "/" + Type.Name;
             }
         }
 

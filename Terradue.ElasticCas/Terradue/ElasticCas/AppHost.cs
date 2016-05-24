@@ -34,7 +34,8 @@ namespace Terradue.ElasticCas {
         public static OpenSearchMemoryCache searchCache;
 
         public System.Configuration.Configuration WebConfig;
-        public readonly ILog Logger;
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger
+            (System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         static OpenSearchEngine openSearchEngine;
 
@@ -48,9 +49,7 @@ namespace Terradue.ElasticCas {
         }
 
         //Tell Service Stack the name of your application and where to find your web services
-        public AppHost() : base("Elastic Catalogue", typeof(OpenSearchDescriptionService).Assembly) {
-
-            log4net.Config.XmlConfigurator.Configure(new FileInfo("log4net.config"));
+        public AppHost() : base("Elastic Catalogue", typeof(BaseService).Assembly) {
 
             // Initialize the add-in engine
             try {
@@ -62,21 +61,18 @@ namespace Terradue.ElasticCas {
 
             LoadStaticObject();
 
-            Logger = LogManager.GetLogger("AppHost");
-
         }
 
         public override void Configure(Funq.Container container) {
 
             JsConfig.ExcludeTypeInfo = true;
 
-            Logger.Info("Reading global configuration");
-            //register any dependencies your services use, e.g:
-            //container.Register<ICacheClient>(new MemoryCacheClient());
+            log.Info("Reading global configuration");
+
             WebConfig =
 				System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration(null);
 
-            Logger.Info("Configure ServiceStack EndpointHostConfig");
+            log.Info("Configure ServiceStack EndpointHostConfig");
             base.SetConfig(new EndpointHostConfig {
                 GlobalResponseHeaders = {
                     { "Access-Control-Allow-Origin", "*" },
@@ -95,10 +91,10 @@ namespace Terradue.ElasticCas {
                 }
             });
 
-            Logger.Info("Load Plugins");
+            log.Info("Load Plugins");
             LoadPlugins();
 
-            Logger.Info("Configure Service Exception Handler");
+            log.Info("Configure Service Exception Handler");
             this.ServiceExceptionHandler = (httpReq, request, ex) => {
                 if (EndpointHost.Config != null && EndpointHost.Config.ReturnsInnerException && ex.InnerException != null && !(ex is IHttpError)) {
                     ex = ex.InnerException;
@@ -110,7 +106,7 @@ namespace Terradue.ElasticCas {
                 return DtoUtils.CreateErrorResponse(request, ex, responseStatus);
             };
 
-            Logger.Info("Register ContentType Filters");
+            log.Info("Register ContentType Filters");
             this.ContentTypeFilters.Register("application/opensearchdescription+xml", OpenSearchDescriptionService.OpenSearchDescriptionSerializer, OpenSearchDescriptionService.OpenSearchDescriptionDeserializer);
 
             this.PreRequestFilters.Insert(0, (httpReq, httpRes) => {
@@ -125,10 +121,8 @@ namespace Terradue.ElasticCas {
             OpenSearchEngine = new OpenSearchEngine();
             OpenSearchEngine.LoadPlugins();
 
-            NameValueCollection cacheSettings = new NameValueCollection();
-            cacheSettings.Add("SlidingExpiration", "600");
+            AppHost.searchCache = new OpenSearchMemoryCache();
 
-            AppHost.searchCache = new OpenSearchMemoryCache("cache", cacheSettings);
             OpenSearchEngine.RegisterPreSearchFilter(AppHost.searchCache.TryReplaceWithCacheRequest);
             OpenSearchEngine.RegisterPostSearchFilter(AppHost.searchCache.CacheResponse);
 
@@ -138,12 +132,12 @@ namespace Terradue.ElasticCas {
 
         void LoadPlugins() {
 
-            Logger.Info("Load DynamicOpenSearchRouteModule");
+            log.Info("Load DynamicOpenSearchRouteModule");
             Plugins.Add(new DynamicOpenSearchRouteModule());
 
             foreach (TypeExtensionNode node in AddinManager.GetExtensionNodes (typeof(Terradue.ElasticCas.Model.IPlugin))) {
                 Terradue.ElasticCas.Model.IPlugin plugin = (Terradue.ElasticCas.Model.IPlugin)node.CreateInstance();
-                Logger.Info("Load " + node.Id);
+                log.Info("Load " + node.Id);
                 Plugins.Add(plugin);
             }
 
