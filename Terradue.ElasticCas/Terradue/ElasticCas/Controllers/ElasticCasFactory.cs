@@ -84,46 +84,48 @@ namespace Terradue.ElasticCas.Controllers {
 
         internal IndexInformation CreateCatalogueIndex(Terradue.ElasticCas.Request.CreateIndexRequest createRequest, bool destroy = false) {
 
+            string indexVName = createRequest.IndexName + "_v" + createRequest.Version;
+
             // check that another index with the same name does not exists
-            if (client.IndexExists(i => i.Index(createRequest.IndexName)).Exists) {
+            if (client.IndexExists(i => i.Index(indexVName)).Exists) {
                 if (destroy) {
-                    client.DeleteIndex(d => d.Index(createRequest.IndexName));
+                    client.DeleteIndex(d => d.Index(indexVName));
                 } else {
-                    throw new InvalidOperationException(string.Format("'{0}' index already exists and cannot be overriden without data loss", createRequest.IndexName));
+                    throw new InvalidOperationException(string.Format("'{0}' index already exists and cannot be overriden without data loss", indexVName));
                 }
             }
 
             // check that an alias with the same name does not exists
-            if (client.AliasExists(createRequest.IndexName).Exists) {
+            if (client.AliasExists(indexVName).Exists) {
                 if (destroy) {
-                    client.Alias(a => a.Remove(d => d.Alias(createRequest.IndexName)));
+                    client.Alias(a => a.Remove(d => d.Alias(indexVName)));
                 } else {
-                    throw new InvalidOperationException(string.Format("'{0}' alias already exists and cannot be overriden without data loss", createRequest.IndexName));
+                    throw new InvalidOperationException(string.Format("'{0}' alias already exists and cannot be overriden without data loss", indexVName));
                 }
             }
            
             // set the analyzers
             var htmlAnalyzer = new CustomAnalyzer();
-            htmlAnalyzer.Tokenizer = "standard";
-            htmlAnalyzer.Filter = new List<string>(){ "standard" };
             htmlAnalyzer.CharFilter = new List<string>(){ "html_strip" };
+            htmlAnalyzer.Tokenizer = "standard";
+            htmlAnalyzer.Filter = new List<string>(){ "standard", "lowercase", "stop", "snowball" };
 
             // index creation
-            var response = client.CreateIndex(c => c.Index(createRequest.IndexName + "_v" + createRequest.Version).Analysis(a => a.Analyzers(an => an.Add(
+            var response = client.CreateIndex(c => c.Index(indexVName).Analysis(a => a.Analyzers(an => an.Add(
                                "htmlAnalyzer", htmlAnalyzer))));
          
 
             // Retrieve index info
             IndexInformation indexInformation = new IndexInformation();
-            var status = client.Status(s => s.Index(createRequest.IndexName + "_v" + createRequest.Version));
-            indexInformation.Name = createRequest.IndexName;
+            var status = client.Status(s => s.Index(indexVName));
+            indexInformation.Name = indexVName;
             indexInformation.Shards = status.Shards;
             indexInformation.Types = new List<TypeInformation>();
 
             // Set the metadata
             if (createRequest.Created.Ticks == 0)
                 createRequest.Created = DateTime.UtcNow;
-            client.Index<Index>(createRequest, i => i.Index(createRequest.IndexName).Type("meta").Id("general"));
+            client.Index<Index>(createRequest, i => i.Index(indexVName).Type("meta").Id("general"));
 
 
             // Init mappings for each types declared
@@ -138,15 +140,18 @@ namespace Terradue.ElasticCas.Controllers {
                     continue;
 
                 IndexNameMarker indexName = new IndexNameMarker();
-                indexName.Name = createRequest.IndexName;
+                indexName.Name = indexVName;
                 PutMappingRequest putMappingRequest = new PutMappingRequest(indexName, type.Type);
                 ((IPutMappingRequest)putMappingRequest).Mapping = type.GetRootMapping();
-
+                if (putMappingRequest.Mapping.Meta == null) {
+                    putMappingRequest.Mapping.Meta = new FluentDictionary<string, object>();
+                }
+                putMappingRequest.Mapping.Meta.Add("type", "elasticCas");
                 var responseM = client.Map(putMappingRequest);
 
                 indexInformation.Types.Add(new TypeInformation() {
                     Name = type.Type.Name, 
-                    Version = putMappingRequest.Mapping.Meta.ContainsKey("version") ? (int)putMappingRequest.Mapping.Meta["version"] : 1,
+                    Version = putMappingRequest.Mapping.Meta != null && putMappingRequest.Mapping.Meta.ContainsKey("version") ? (int)putMappingRequest.Mapping.Meta["version"] : 1,
                     Description = enAttribute.Description
                 });
 
@@ -218,51 +223,70 @@ namespace Terradue.ElasticCas.Controllers {
                 return null;
             }
 
+            bool migrationInProgress = false;
+
+            var migration_lock = client.Get<object>(i => i.Index(alias.Index).Type("lock").Id("global"));
+            if (migration_lock.Found) {
+                resp.Message = "Migration in progress...";
+                migrationInProgress = true;
+            }
+
             List<TypeMapping> mappingCanditates = new List<TypeMapping>();
             List<TypeInformation> typeStatuses = new List<TypeInformation>();
 
             foreach (var mapping in mappingResponse.Mappings) {
                 foreach (var rootmap in mapping.Value) {
 
+                    if (rootmap.TypeName == "lock" || rootmap.TypeName == "meta" || rootmap.TypeName == "migration")
+                        continue;
+
                     TypeInformation typeStatus = new TypeInformation();
                     typeStatus.Name = rootmap.TypeName;
 
+
+                    if (migrationInProgress) {
+                        var migrationInfo = client.Get<TypeInformation>(i => i.Index(alias.Index).Type("migration").Id(rootmap.TypeName));
+                        if (migrationInfo.Found)
+                            typeStatus = migrationInfo.Source;
+                        else {
+                            typeStatus.Message = "No migration progress found";
+                        }
+                        typeStatuses.Add(typeStatus);
+                        continue;
+                    }
+
+
                     typeStatuses.Add(typeStatus);
 
-                    if (rootmap.Mapping.Meta != null && rootmap.Mapping.Meta.ContainsKey("type") && String.Equals(rootmap.Mapping.Meta["type"], "elasticCas")) {
+                    mappingCanditates.Add(rootmap);
 
-                        mappingCanditates.Add(rootmap);
+                    if (rootmap.Mapping.Meta != null && rootmap.Mapping.Meta.ContainsKey("version"))
+                        typeStatus.Version = (int)rootmap.Mapping.Meta["version"];
+                    else
+                        typeStatus.Version = 1;
 
-                        if (rootmap.Mapping.Meta.ContainsKey("version"))
-                            typeStatus.Version = (int)rootmap.Mapping.Meta["version"];
-                        else
-                            typeStatus.Version = 1;
+                    IOpenSearchableElasticType osetype = GetOpenSearchableElasticTypeByNameOrDefault(alias.Index, rootmap.TypeName);
 
-                        IOpenSearchableElasticType osetype = GetOpenSearchableElasticTypeByNameOrDefault(alias.Index, rootmap.TypeName);
+                    if (osetype == null) {
+                        typeStatus.Message = "Plugin for this type not found!";
+                        continue;
+                    }
 
-                        if (osetype == null) {
-                            typeStatus.Message = "Plugin for this type not found!";
-                            continue;
-                        }
+                    RootObjectMapping curMap = osetype.GetRootMapping();
 
-                        RootObjectMapping curMap = osetype.GetRootMapping();
-
-                        if (curMap.Meta != null && curMap.Meta.ContainsKey("version")) {
-                            var currentVersion = (int)curMap.Meta["version"];
-                            if (currentVersion > typeStatus.Version) {
-                                typeStatus.Message = string.Format("This type must be updated to the lastest version ({0})", currentVersion);
-                            }
-                        } else {
-                            typeStatus.Message = "the plugin for this type do not support versioning!";
+                    if (curMap.Meta != null && curMap.Meta.ContainsKey("version")) {
+                        var currentVersion = (int)curMap.Meta["version"];
+                        if (currentVersion > typeStatus.Version) {
+                            typeStatus.Message = string.Format("This type must be updated to the lastest version ({0})", currentVersion);
                         }
                     } else {
-                        typeStatus.Message = "No plugin found for this type";
+                        typeStatus.Message = "the plugin for this type do not support versioning!";
                     }
                 }
             }
 
 
-            if (mappingCanditates.Count() == 0) {
+            if (mappingCanditates.Count() == 0 && !migrationInProgress) {
                 resp.Error = "Not a Geosquare index";
                 return resp;
             } else {
@@ -282,8 +306,8 @@ namespace Terradue.ElasticCas.Controllers {
         public bool LockIndex(string indexName) {
 
             try {
-                client.Index<object>(new object(), i => i.Index(indexName).Type("lock").Id("global").OpType(Elasticsearch.Net.OpType.Create));
-                return true;
+                var resp = client.Index<object>(new object(), i => i.Index(indexName).Type("lock").Id("global").OpType(Elasticsearch.Net.OpType.Create));
+                return resp.Created;
             } catch (Exception) {
                 return false;
             }
@@ -312,14 +336,18 @@ namespace Terradue.ElasticCas.Controllers {
             // Get the current index metadata
             var curIndexMeta = client.Get<Index>(i => i.Index(alias.Index).Type("meta").Id("general"));
 
-            if (curIndexMeta == null) {
-                report.Error = "No metadata found for index! Migration aborted.";
-                RemoveIndexLock(alias.Index);
-                return report;
+            Index curIndexInfo = null;
+
+            if (curIndexMeta.Found) {
+                curIndexInfo = curIndexMeta.Source;
+            } else {
+                curIndexInfo = new Index();
+                curIndexInfo.IndexName = alias.Index;
+                curIndexInfo.Version = 1;
             }
 
             // create the new index request
-            Terradue.ElasticCas.Request.CreateIndexRequest newIndexMeta = new Terradue.ElasticCas.Request.CreateIndexRequest(curIndexMeta.Source);
+            Terradue.ElasticCas.Request.CreateIndexRequest newIndexMeta = new Terradue.ElasticCas.Request.CreateIndexRequest(curIndexInfo);
             // increment the version
             newIndexMeta.Version++;
             // update the migrated date
@@ -348,54 +376,59 @@ namespace Terradue.ElasticCas.Controllers {
             foreach (var mapping in mappingResponse.Mappings) {
                 foreach (var rootmap in mapping.Value) {
 
+                    if (rootmap.TypeName == "lock" || rootmap.TypeName == "meta" || rootmap.TypeName == "migration")
+                        continue;
+
                     TypeInformation typeStatus = new TypeInformation();
                     typeStatus.Name = rootmap.TypeName;
                     report.TypeStatus.Add(typeStatus);
 
                     // save the Type information as a document in the index
                     client.Index(typeStatus, i => i.Index(alias.Index).Type("migration").Id(rootmap.TypeName));
-
-                    if (rootmap.Mapping.Meta != null && rootmap.Mapping.Meta.ContainsKey("type") && String.Equals(rootmap.Mapping.Meta["type"], "elasticCas")) {
                         
-                        if (rootmap.Mapping.Meta.ContainsKey("version"))
-                            typeStatus.Version = (int)rootmap.Mapping.Meta["version"];
-                        else
-                            typeStatus.Version = 1;
+                    if (rootmap.Mapping.Meta != null && rootmap.Mapping.Meta.ContainsKey("version"))
+                        typeStatus.Version = (int)rootmap.Mapping.Meta["version"];
+                    else
+                        typeStatus.Version = 1;
 
-                        // search the plugins's type
-                        IOpenSearchableElasticType osetype = GetOpenSearchableElasticTypeByNameOrDefault(alias.Index, rootmap.TypeName);
+                    // search the plugins's type
+                    IOpenSearchableElasticType osetype = GetOpenSearchableElasticTypeByNameOrDefault(alias.Index, rootmap.TypeName);
 
-                        if (osetype == null) {
-                            typeStatus.Message = "Simple reindex in progress";
-                            // Start the reindex as a task
-                            Task.Factory.StartNew(() => {this.ReindexTypeSimple(alias.Index, newIndexInfo.Name, typeStatus);});
-                        }
-
-                        RootObjectMapping curMap = osetype.GetRootMapping();
-
-                        if (curMap.Meta != null && curMap.Meta.ContainsKey("version")) {
-                            var currentVersion = (int)curMap.Meta["version"];
-                            if (currentVersion > typeStatus.Version) {
-                                // reindex with migration
-                            } else {
-                                // Start the reindex as a task
-                                Task.Factory.StartNew(() => {this.ReindexTypeSimple(alias.Index, newIndexInfo.Name, typeStatus);});
-                            }
-                        } else {
-                            typeStatus.Message = "the plugin for this type do not support versioning!";
-                            // Start the reindex as a task
-                            Task.Factory.StartNew(() => {this.ReindexTypeSimple(alias.Index, newIndexInfo.Name, typeStatus);});
-                        }
-
-                    } else {
+                    if (osetype == null) {
+                        typeStatus.Message = "Simple reindex in progress";
                         // Start the reindex as a task
-                        Task.Factory.StartNew(() => {this.ReindexTypeSimple(alias.Index, newIndexInfo.Name, typeStatus);});
+                        Task.Factory.StartNew(() => {
+                            this.ReindexTypeSimple(alias.Index, newIndexInfo.Name, typeStatus);
+                        });
+                    }
+
+                    RootObjectMapping curMap = osetype.GetRootMapping();
+
+                    if (curMap.Meta != null && curMap.Meta.ContainsKey("version")) {
+                        var currentVersion = (int)curMap.Meta["version"];
+                        if (currentVersion > typeStatus.Version) {
+                            // reindex with migration
+                            Task.Factory.StartNew(() => {
+                                osetype.ReindexTypeWithMigration(alias.Index, newIndexInfo.Name, typeStatus, this);
+                            });
+                        } else {
+                            // Start the reindex as a task
+                            Task.Factory.StartNew(() => {
+                                this.ReindexTypeSimple(alias.Index, newIndexInfo.Name, typeStatus);
+                            });
+                        }
+                    } else {
+                        typeStatus.Message = "the plugin for this type do not support versioning!";
+                        // Start the reindex as a task
+                        Task.Factory.StartNew(() => {
+                            this.ReindexTypeSimple(alias.Index, newIndexInfo.Name, typeStatus);
+                        });
                     }
                 }
             }
 
             // Remove the lock
-            RemoveIndexLock(alias.Index);
+            //RemoveIndexLock(alias.Index);
 
             return report;
         }
@@ -423,7 +456,7 @@ namespace Terradue.ElasticCas.Controllers {
                             }
                             return b;
                         }).ThrowOnError(type, currentIndexName, "reindex page " + page, this);
-                        type.Message = "Reindexing progress: " + (page + 1) * 100;
+                        type.Message = "Reindexing progress: " + (page + 1) * 100 + " / " + searchResult.Total;
                         // save the Type information as a document in the index
                         client.Index(type, i => i.Index(currentIndexName).Type("migration").Id(type.Name));
                     }

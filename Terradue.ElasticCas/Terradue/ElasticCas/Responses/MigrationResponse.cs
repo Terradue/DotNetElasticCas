@@ -10,7 +10,7 @@ namespace Terradue.ElasticCas {
 
         public string IndexName { get; set; }
 
-        public string Mode { get; set; }
+        public string Message { get; set; }
 
         public List<TypeInformation> TypeStatus { get; set; }
 

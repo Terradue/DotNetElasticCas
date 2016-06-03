@@ -23,8 +23,6 @@ namespace Terradue.ElasticCas.Types {
             get ;
         }
 
-        IElasticObject UpgradeObject(IElasticObject obj);
-
     }
 
 }

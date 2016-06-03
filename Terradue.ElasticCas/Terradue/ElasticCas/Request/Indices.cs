@@ -20,6 +20,8 @@ namespace Terradue.ElasticCas.Request {
     public class DeleteIndexRequest : IReturn<string>{
 
         public string IndexName { get; set; }
+
+        public string ConfirmIndexName { get; set; }
     }
 }
 

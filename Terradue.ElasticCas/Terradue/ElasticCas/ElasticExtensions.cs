@@ -8,7 +8,7 @@ namespace Terradue.ElasticCas {
         {
             if (!response.IsValid)
             {
-                typeStatus.Message = "Failed to " + actionDescription + ": " + response.ServerError.Error;
+                typeStatus.Message = "Failed to " + actionDescription + ": " + response.ServerError != null ? response.ServerError.Error : "";
                 // save the Type information as a document in the index
                 ecf.Client.Index(typeStatus.Name, i => i.Index(indexName).Type("migration").Id(typeStatus.Name));
                 throw new InvalidOperationException(response.ServerError.Error);

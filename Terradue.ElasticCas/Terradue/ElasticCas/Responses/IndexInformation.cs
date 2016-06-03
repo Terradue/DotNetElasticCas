@@ -12,6 +12,8 @@ namespace Terradue.ElasticCas.Responses {
 
         public List<TypeInformation> Types { get; set; }
 
+        public string Message { get; set; }
+
     }
 }
 

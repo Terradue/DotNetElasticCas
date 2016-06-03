@@ -22,30 +22,33 @@ namespace Terradue.ElasticCas.Services {
         [AddHeader(ContentType = ContentType.Json)]
         public MigrationResponse Put(MigrateOneIndexRequest request) {
 
-            var aliases = client.CatAliases(c => c.FilterPath(request.IndexName));
+            var aliases = client.CatAliases();
 
-            if (aliases.Records.Count() == 0) {
-                return new MigrationResponse(){ Error = "This is not an alias" };
+            if (aliases.Records != null && aliases.Records.Any() && aliases.Records.Where(a => a.Alias == request.IndexName).Any()) {
+
+                var response = ecf.MigrateIndex(aliases.Records.Where(a => a.Alias == request.IndexName).First());
+                return response;
+
             }
 
-            var response = ecf.MigrateIndex(aliases.Records.First());
-
-            return response;
+            return new MigrationResponse(){ Error = "Index Not found" };
 
         }
 
         [AddHeader(ContentType = ContentType.Json)]
         public MigrationResponse Get(ScanOneIndexStatusRequest request) {
 
-            var aliases = client.CatAliases(c => c.FilterPath(request.IndexName));
+            var aliases = client.CatAliases();
 
-            if (aliases.Records.Count() == 0) {
-                return new MigrationResponse(){ Error = "This is not an alias" };
+            if (aliases.Records != null && aliases.Records.Any() && aliases.Records.Where(a => a.Alias == request.IndexName).Any()) {
+
+                var response = ecf.ScanIndex(aliases.Records.Where(a => a.Alias == request.IndexName).First());
+                return response;
+
             }
 
-            var response = ecf.MigrateIndex(aliases.Records.First());
-
-            return response;
+            return new MigrationResponse(){ Error = "Index Not found" };
+            
 
         }
 
